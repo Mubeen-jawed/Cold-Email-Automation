@@ -1,0 +1,27 @@
+# Core automation libraries
+playwright==1.40.0
+beautifulsoup4==4.12.2
+requests==2.31.0
+python-dotenv==1.0.0
+
+# Google APIs (all FREE)
+google-api-python-client==2.108.0
+google-auth-httplib2==0.1.1
+google-auth-oauthlib==1.1.0
+gspread==5.12.0
+
+# Gemini AI (FREE)
+google-generativeai==0.3.1
+
+# Gmail API
+google-auth==2.25.2
+
+# Data handling
+pandas==2.1.4
+
+# Async support
+aiohttp==3.9.1
+
+# Utilities
+fake-useragent==1.4.0
+lxml==4.9.3
