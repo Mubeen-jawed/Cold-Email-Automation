@@ -10,103 +10,52 @@ Change city, niche, and all settings from here!
 
 TARGET = {
     # City & Location
-    "city": "Dubai",
-    "country": "UAE",
+    "city": "Seattle & Eastside suburbs",
+    "state": "Washington",
+    "country": "USA",
     "localities": [
-        "Dubai Marina",
-        "Business Bay", 
-        "Downtown Dubai",
-        "JVC",
-        "Palm Jumeirah",
-        "JLT",
-        "DIFC"
+        "Queen Anne (Seattle)",
+        "Capitol Hill (Seattle)",
+        "Madison Park (Seattle)",
+        "Laurelhurst (Seattle)",
+        "Windermere (Seattle)",
+        "Montlake (Seattle)",
+        "Broadmoor (Seattle)",
+        "View Ridge (Seattle)",
+        "Ravenna (Seattle)",
+        "Wallingford (Seattle)",
+        "Belltown (Seattle)",
+        "Magnolia (Seattle)",
+        "Mercer Island",
+        "Hunts Point",
+        "Medina",
+        "Clyde Hill",
+        "Yarrow Point",
+        "Bellevue, Downtown Bellevue",
+        "Bellevue, Bridle Trails",
+        "Bellevue, West Bellevue",
+        "Bellevue, Newport Shores",
+        "Kirkland, Market/Downtown",
+        "Kirkland, Houghton",
+        "Redmond, Education Hill",
+        "Redmond, Overlake",
+        "Redmond, Bear Creek",
+        "Sammamish",
+        "Issaquah",
+        "Bothell Highlands",
+        "Sammamish Plateau"
     ],
     
     # Business Niche
-    "niche": "real estate agency",
-    "niche_plural": "real estate agencies",
-    "industry": "real estate",
-    
+    "niche": "home service business",
+    "niche_plural": "home service businesses",
+    "industry": "home services (HVAC, Roofing, Plumbing)",
+
     # What you're selling
     "your_service": "websites and digital presence",
     "your_service_benefit": "get more leads online",
-    "pain_point": "limited online presence",
+    "pain_point": "limited online visibility and lead generation"
 }
-
-# ============================================
-# 📋 EXAMPLE CONFIGURATIONS FOR OTHER CITIES/NICHES
-# ============================================
-
-"""
-# London Real Estate:
-TARGET = {
-    "city": "London",
-    "country": "UK",
-    "localities": ["Westminster", "Kensington", "Chelsea", "Mayfair", "Canary Wharf"],
-    "niche": "estate agent",
-    "niche_plural": "estate agents",
-    "industry": "real estate",
-    "your_service": "modern websites and CRM systems",
-    "your_service_benefit": "automate lead management",
-    "pain_point": "outdated systems",
-}
-
-# New York Restaurants:
-TARGET = {
-    "city": "New York",
-    "country": "USA",
-    "localities": ["Manhattan", "Brooklyn", "Queens", "Bronx"],
-    "niche": "restaurant",
-    "niche_plural": "restaurants",
-    "industry": "food & beverage",
-    "your_service": "online ordering systems",
-    "your_service_benefit": "increase takeout orders",
-    "pain_point": "no online ordering",
-}
-
-# Singapore Fitness Centers:
-TARGET = {
-    "city": "Singapore",
-    "country": "Singapore",
-    "localities": ["Central Area", "Marina Bay", "Orchard", "Jurong"],
-    "niche": "fitness center",
-    "niche_plural": "fitness centers",
-    "industry": "health & fitness",
-    "your_service": "member management software",
-    "your_service_benefit": "automate bookings and payments",
-    "pain_point": "manual booking process",
-}
-
-# Dubai Dental Clinics:
-TARGET = {
-    "city": "Dubai",
-    "country": "UAE",
-    "localities": ["Dubai Marina", "JBR", "Business Bay", "Downtown"],
-    "niche": "dental clinic",
-    "niche_plural": "dental clinics",
-    "industry": "healthcare",
-    "your_service": "appointment booking systems",
-    "your_service_benefit": "reduce no-shows and manage appointments",
-    "pain_point": "inefficient scheduling",
-}
-
-# London Coffee Shops:
-TARGET = {
-    "city": "London",
-    "country": "UK",
-    "localities": ["Shoreditch", "Camden", "Soho", "Notting Hill"],
-    "niche": "coffee shop",
-    "niche_plural": "coffee shops",
-    "industry": "hospitality",
-    "your_service": "loyalty apps and online ordering",
-    "your_service_benefit": "build customer loyalty",
-    "pain_point": "lack of customer retention",
-}
-"""
-
-# ============================================
-# 🔧 AUTOMATION SETTINGS
-# ============================================
 
 SCRAPING = {
     "results_per_locality": 20,
@@ -146,7 +95,7 @@ SHEETS = {
     # 1. Go to sheets.google.com and create new spreadsheet
     # 2. Share it with service account email (from credentials.json)
     # 3. Add URL here:
-    "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1IVU4_k2C5s3sZu5u5l0rAdzKrkda5qBd7LA8SX6ryRw/edit?gid=0#gid=0",  # Paste URL here if needed
+    "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1vhFkrNpNjLcWY0ADmNeQv7BYfFSllYo7CnQDm8aZ4Z4/edit?usp=sharing",  # Paste URL here if needed
     "sheets": {
         "agencies": "Agencies",
         "emails": "Generated Emails",
