@@ -9,6 +9,17 @@ import json
 from config import SHEETS, TARGET
 
 class SheetsDatabase:
+    # Expected schema for the `Agencies` sheet.
+    # We use these explicitly (instead of relying on gspread `get_all_records`)
+    # because gspread requires header names to be unique.
+    EXPECTED_AGENCIES_HEADERS = [
+        'ID', 'Name', 'Locality', 'City', 'Country', 'Address', 'Phone',
+        'Website', 'Rating', 'Reviews', 'Source',
+        'Has Website', 'Performance Score', 'SEO Score', 'Quality',
+        'Priority', 'Qualification Score', 'Reasons',
+        'Email', 'Email Source', 'Qualified', 'Email Sent', 'Created At'
+    ]
+
     def __init__(self):
         """Initialize Google Sheets connection"""
         self.setup_credentials()
@@ -93,26 +104,63 @@ class SheetsDatabase:
     def _setup_agencies_sheet(self):
         """Setup agencies sheet with headers"""
         sheet_name = SHEETS['sheets']['agencies'] if isinstance(SHEETS.get('sheets'), dict) else 'Agencies'
+        headers = self.EXPECTED_AGENCIES_HEADERS
         
         try:
+            # Use existing sheet as-is if it already exists
             self.agencies_sheet = self.spreadsheet.worksheet(sheet_name)
+            # Normalize header row to the expected schema.
+            # If headers drift (from previous runs or manual edits), gspread will
+            # map wrong column names -> and Priority filtering will fail.
+            try:
+                existing_headers = self.agencies_sheet.row_values(1)
+                end_col_letter = self._column_letter(len(headers))
+                expected_range = f'A1:{end_col_letter}1'
+                if existing_headers[:len(headers)] != headers:
+                    self.agencies_sheet.update(expected_range, [headers])
+            except Exception:
+                pass
         except gspread.WorksheetNotFound:
             self.agencies_sheet = self.spreadsheet.add_worksheet(
                 title=sheet_name,
                 rows=1000,
-                cols=20
+                cols=len(headers)
             )
             
-            # Add headers
-            headers = [
-                'ID', 'Name', 'Locality', 'City', 'Country', 'Address', 'Phone',
-                'Website', 'Rating', 'Reviews', 'Source', 
-                'Has Website', 'Performance Score', 'SEO Score', 'Quality',
-                'Priority', 'Qualification Score', 'Reasons',
-                'Email', 'Email Source', 'Qualified', 'Email Sent', 'Created At'
-            ]
             self.agencies_sheet.update('A1:W1', [headers])
             print(f"  ✅ Created {sheet_name} sheet")
+
+    @staticmethod
+    def _column_letter(col_index: int) -> str:
+        """Convert 1-based column index to Excel/Sheets-style column letter."""
+        result = []
+        while col_index > 0:
+            col_index, remainder = divmod(col_index - 1, 26)
+            result.append(chr(65 + remainder))
+        return ''.join(reversed(result))
+
+    def _get_agencies_as_dicts(self):
+        """Read agencies rows using fixed A:W range.
+
+        This avoids gspread's `get_all_records()` which fails if header names
+        are not unique on the sheet.
+        """
+        expected_headers = self.EXPECTED_AGENCIES_HEADERS
+        end_col_letter = self._column_letter(len(expected_headers))
+        end_row = self.agencies_sheet.row_count
+
+        values = self.agencies_sheet.get(f'A1:{end_col_letter}{end_row}')
+        if not values or len(values) < 2:
+            return []
+
+        results = []
+        for row in values[1:]:
+            row = (row + [''] * len(expected_headers))[:len(expected_headers)]
+            if not str(row[0]).strip():  # ID column is empty => stop/skip
+                continue
+            results.append({expected_headers[i]: row[i] for i in range(len(expected_headers))})
+
+        return results
     
     def _setup_emails_sheet(self):
         """Setup generated emails sheet"""
@@ -177,8 +225,11 @@ class SheetsDatabase:
             # Generate unique ID
             business_id = f"{business_data['name']}_{business_data.get('locality', 'unknown')}".replace(' ', '_')
             
-            # Check if exists
-            cell = self.agencies_sheet.find(business_id, in_column=1)
+            # Check if exists (be tolerant of different gspread versions)
+            try:
+                cell = self.agencies_sheet.find(business_id, in_column=1)
+            except Exception:
+                cell = None
             
             row_data = [
                 business_id,
@@ -201,14 +252,29 @@ class SheetsDatabase:
                 datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             ]
             
+            # Align data width with current sheet header to avoid column shifts
+            try:
+                existing_headers = self.agencies_sheet.row_values(1)
+                num_cols = len(existing_headers) if existing_headers else len(row_data)
+            except Exception:
+                num_cols = len(row_data)
+
+            if len(row_data) < num_cols:
+                row_data.extend([''] * (num_cols - len(row_data)))
+            elif len(row_data) > num_cols:
+                row_data = row_data[:num_cols]
+
+            end_col_letter = self._column_letter(num_cols)
+
             if cell:
                 # Update existing
                 row_number = cell.row
-                self.agencies_sheet.update(f'A{row_number}:W{row_number}', [row_data])
+                self.agencies_sheet.update(f'A{row_number}:{end_col_letter}{row_number}', [row_data])
                 print(f"  ✅ Updated: {business_data['name']}")
             else:
                 # Add new
-                self.agencies_sheet.append_row(row_data)
+                # table_range ensures the table is anchored starting from column A
+                self.agencies_sheet.append_row(row_data, table_range=f'A1:{end_col_letter}1')
                 print(f"  ✨ Added: {business_data['name']}")
             
             return business_id
@@ -224,21 +290,11 @@ class SheetsDatabase:
     
     def get_all_businesses(self):
         """Get all businesses as list of dicts"""
-        try:
-            records = self.agencies_sheet.get_all_records()
-            return records
-        except Exception as e:
-            print(f"❌ Error getting businesses: {e}")
-            return []
+        return self._get_agencies_as_dicts()
     
     def get_all_agencies(self):
         """Get all agencies as list of dicts"""
-        try:
-            records = self.agencies_sheet.get_all_records()
-            return records
-        except Exception as e:
-            print(f"❌ Error getting agencies: {e}")
-            return []
+        return self._get_agencies_as_dicts()
     
     def get_unqualified_agencies(self):
         """Get agencies that haven't been qualified"""
@@ -273,16 +329,7 @@ class SheetsDatabase:
     
     def get_all_businesses(self):
         """Get all businesses as list of dicts"""
-        try:
-            # Check if sheet has data first
-            all_values = self.agencies_sheet.get_all_values()
-            if len(all_values) <= 1:  # Only headers or empty
-                return []
-            records = self.agencies_sheet.get_all_records()
-            return records
-        except Exception as e:
-            print(f"❌ Error getting businesses: {e}")
-            return []
+        return self._get_agencies_as_dicts()
     
     def get_high_priority_agencies(self):
         """Get high priority agencies without emails sent"""
@@ -329,6 +376,23 @@ class SheetsDatabase:
             print(f"  ❌ Error saving email: {e}")
             return None
     
+    def mark_email_skipped(self, agency_id):
+        """Mark a generated email as Skipped (duplicate address) so it is never re-queued."""
+        try:
+            emails = self.emails_sheet.get_all_records()
+            for idx, email in enumerate(emails, start=2):
+                if email.get('Agency ID') == agency_id and email.get('Sent') == 'No':
+                    self.emails_sheet.update(f'H{idx}', [['Skipped']])
+                    self.emails_sheet.update(
+                        f'I{idx}',
+                        [[datetime.now().strftime('%Y-%m-%d %H:%M:%S')]]
+                    )
+                    break
+            return True
+        except Exception as e:
+            print(f"  ❌ Error marking skipped: {e}")
+            return False
+
     def mark_email_sent(self, agency_id):
         """Mark email as sent"""
         try:

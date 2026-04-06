@@ -6,7 +6,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import time
 import random
-from sheets_database import SheetsDatabase
+from pg_database import PostgresDatabase as SheetsDatabase
 from config import TARGET, SCRAPING, get_search_query
 
 class GoogleMapsScraper:
@@ -96,16 +96,21 @@ class GoogleMapsScraper:
                 for i in range(SCRAPING['scroll_times']):
                     try:
                         await page.evaluate('''
-                            const scrollable = document.querySelector('div.m6QErb[aria-label]');
-                            if (scrollable) scrollable.scrollBy(0, 1000);
+                            const scrollable = document.querySelector('div.m6QErb[aria-label]')
+                                           || document.querySelector('div[role="feed"]');
+                            if (scrollable) scrollable.scrollBy(0, 1500);
                         ''')
-                        await asyncio.sleep(2)
+                        await asyncio.sleep(3)
                     except:
                         pass
                 
-                # Get all result links
+                # Get all result links — try multiple selectors (Google Maps changes class names)
                 result_links = await page.query_selector_all('a.hfpxzc')
-                
+                if not result_links:
+                    result_links = await page.query_selector_all('div[role="feed"] a[href*="/maps/place/"]')
+                if not result_links:
+                    result_links = await page.query_selector_all('a[href*="/maps/place/"]')
+
                 if not result_links:
                     print("   ⚠️ No business links found")
                     await browser.close()
@@ -230,7 +235,16 @@ class GoogleMapsScraper:
             try:
                 website_elem = await page.query_selector('a[data-item-id="authority"]')
                 if website_elem:
-                    data['website'] = await website_elem.get_attribute('href')
+                    href = await website_elem.get_attribute('href') or ''
+                    # Google Maps wraps URLs in a redirect: /url?q=https://...&...
+                    if '/url?q=' in href or href.startswith('/url?'):
+                        from urllib.parse import urlparse, parse_qs
+                        qs = parse_qs(urlparse(href).query)
+                        href = qs.get('q', [href])[0]
+                    # Strip trailing tracking params that survived
+                    if href and '&' in href:
+                        href = href.split('&')[0]
+                    data['website'] = href.rstrip('/') if href else None
                 else:
                     data['website'] = None
             except:
@@ -244,29 +258,40 @@ class GoogleMapsScraper:
     
     async def scrape_all_localities(self, max_per_locality=None):
         """Scrape all configured localities"""
+        import pg_database as _pgdb
         print(f"\n🚀 Starting {self.niche} scraping in {self.city}")
         print(f"📋 Will scrape {len(self.localities)} localities\n")
-        
+
         total_found = 0
-        
+
         for idx, locality in enumerate(self.localities, 1):
             print(f"\n{'='*60}")
             print(f"Locality {idx}/{len(self.localities)}")
             found = await self.scrape_locality(locality, max_per_locality)
             total_found += found
-            
-            if idx < len(self.localities):
+
+            if found == 0:
+                print(f"   ⚡ No businesses found in {locality} — skipping delay")
+                _pgdb._pipeline_notice = f"No businesses found in \"{locality}\" — check the area name or try a different search term."
+
+            if idx < len(self.localities) and found > 0:
                 wait_time = random.uniform(
                     SCRAPING['delay_between_localities'] - 10,
                     SCRAPING['delay_between_localities'] + 10
                 )
                 print(f"\n⏳ Waiting {wait_time:.0f}s before next locality...")
-                await asyncio.sleep(wait_time)
-        
+                # Sleep in 1-second chunks so Stop button is responsive
+                elapsed = 0
+                while elapsed < wait_time:
+                    if getattr(_pgdb, '_stop_requested', False):
+                        print("   🛑 Stop requested — halting scrape")
+                        return total_found
+                    await asyncio.sleep(1)
+                    elapsed += 1
+
         print(f"\n{'='*60}")
         print(f"🎉 Scraping complete!")
         print(f"📊 Total {self.niche}s found: {total_found}")
-        print(f"📊 Google Sheet: {self.db.get_spreadsheet_url()}")
 
 async def main():
     scraper = GoogleMapsScraper()

@@ -1,3 +1,6 @@
+# PostgreSQL
+psycopg2-binary==2.9.9
+
 # Core automation libraries
 playwright==1.40.0
 beautifulsoup4==4.12.2

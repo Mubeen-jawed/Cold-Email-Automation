@@ -6,7 +6,7 @@ Fully dynamic - adapts to any niche/city from config
 import requests
 import os
 import json
-from sheets_database import SheetsDatabase
+from pg_database import PostgresDatabase as SheetsDatabase
 from config import TARGET, EMAIL, AI, get_email_context
 from dotenv import load_dotenv
 
@@ -25,22 +25,54 @@ class EmailGenerator:
         if not self.api_key:
             raise ValueError("OPENROUTER_API_KEY not found in .env file!")
         
-        self.api_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.model = "arcee-ai/trinity-large-preview:free"  # or "openai/gpt-4o-mini"
+        self.api_url = AI['api_url'] 
+        self.model = AI['model']  # or "openai/gpt-4o-mini"
         
         # Get dynamic context from config
         self.context = get_email_context()
 
     def generate_email(self, business):
-        """Generate personalized email using OpenRouter"""
-        
-        # Build business-specific context
+        """Generate email — uses template or AI depending on email_mode setting."""
+        mode = EMAIL.get('email_mode', 'ai')
+        if mode == 'template':
+            return self._apply_template(business)
+        return self._generate_ai_email(business)
+
+    def _apply_template(self, business):
+        """Substitute {variables} in the saved template."""
+        subject_tpl = EMAIL.get('email_template_subject', '').strip()
+        body_tpl    = EMAIL.get('email_template_body', '').strip()
+        if not body_tpl:
+            print(f"  No template saved — falling back to AI for: {business['Name']}")
+            return self._generate_ai_email(business)
+
+        subs = {
+            '{business_name}': str(business.get('Name', '')),
+            '{city}':          str(business.get('Locality') or self.context['city']),
+            '{website}':       str(business.get('Website', '')),
+            '{rating}':        str(business.get('Rating', '')),
+            '{reviews}':       str(business.get('Reviews', '')),
+            '{your_name}':     self.context['sender_name'],
+            '{your_service}':  self.context['service'],
+            '{benefit}':       self.context['benefit'],
+            '{pain_point}':    self.context['pain_point'],
+            '{your_email}':    EMAIL.get('your_email', ''),
+            '{niche}':         self.context['niche'],
+            '{industry}':      self.context.get('industry', ''),
+        }
+        subject = subject_tpl
+        body    = body_tpl
+        for k, v in subs.items():
+            subject = subject.replace(k, v)
+            body    = body.replace(k, v)
+        print(f"  Template applied for: {business['Name']}")
+        return {'subject': subject, 'body': body}
+
+    def _generate_ai_email(self, business):
+        """Generate personalized email using OpenRouter AI."""
         business_context = self._build_business_context(business)
-        
-        # Create dynamic prompt
         prompt = self._create_dynamic_prompt(business_context)
-        
-        print(f"  🤖 Generating email for: {business['Name']}")
+        print(f"  AI generating email for: {business['Name']}")
         
         try:
             headers = {
@@ -192,30 +224,33 @@ class EmailGenerator:
     - Main benefit: {self.context['benefit']}
 
     EMAIL STRUCTURE (Follow this EXACTLY):
-    Line 1: Can I make you more money?
-    Line 2: Greeting (use "Hi [BusinessName] team," or "Hey [BusinessName],")
-    Line 3: Blank
-    Line 4: Opening - mention specific observation about their online presence
-    Line 5-6: Point out the specific problem (website missing OR website issues) - be specific
+    Line 1: Greeting (use "Hi there,")
+    Line 2: Blank
+    Line 3: You probably get a lot of messages, so this will only take 30s.
+    Line 4: Blank
+    Line 5-6:[Insert personalized line about the recipient here]. I noticed you might be struggling with [pain point), and I can help you solve it by (Insert your specific offer/solution].
     Line 7: Blank
-    Line 8: Brief mention of what you do and the benefit
+    Line 8: [Insert a social proof, like my website is www.revenuelyft.com or such as a past result or "I've helped X do Y"]
     Line 9: Blank  
-    Line 10: Simple question to engage them
+    Line 10: I would really appreciate a yes or no if this is something you would be interested in.
     Line 11: Blank
     Line 12: My Linkedin: www.linkedin.com/in/mubeejaweddev"
-    Line 13: Blank
-    Line 14: Sign off as just "Best - {self.context['sender_name']}"
+    Line 13: My Agency: revenuelyft.com"
+    Line 14: Blank
+    Line 15: Sign off as just "Best - {self.context['sender_name']}"
     CRITICAL RULES:
-    1. NO em dashes (—) or en dashes (–) ANYWHERE
+    1. NO em dashes (—) or en dashes (–) ANYWHERE, nor these (-)    
     2. Dont use hyphens
     3. Be SPECIFIC about what you noticed (slow site, no mobile version, missing website, etc.)
-    4. Keep it under 120 words total
+    4. Keep it under 120 words total or shorter if needed
     5. Write in first person as {self.context['sender_name']}
     6. Sound like you genuinely checked out their business
     7. NO marketing jargon ("leverage", "synergy", "cutting-edge", "optimize", "streamline")
     8. NO multiple exclamation marks
     9. Use contractions (you're, I'm, it's)
     10. End with ONE simple question
+    11. Keep it conversational and friendly with no buzz words
+    12. Dont mention my website (revenuelyft.com/) in the email body, that will only come at the end
 
     TONE:
     - Helpful, not salesy
@@ -232,7 +267,7 @@ class EmailGenerator:
     EXAMPLES OF GOOD OPENINGS:
 
     For NO WEBSITE:
-    "I was looking for real estate agencies in [area] and noticed you don't seem to have a website..."
+    "I was looking for Homer services in [area] and noticed you don't seem to have a website..."
     "Couldn't find your website when I searched - just your Google listing..."
 
     For POOR WEBSITE:
@@ -241,26 +276,64 @@ class EmailGenerator:
     "Your site's performance score is pretty low (42/100)..."
 
     Return ONLY a valid JSON object on a SINGLE LINE:
-    {{"subject": "casual subject line 5-7 words no dashes", "body": "email body with \\n for line breaks"}}
+    {{"subject": " I won't waste your time, I promise"}}
 
-    CRITICAL: Put the ENTIRE JSON on ONE line. Use \\n for line breaks in the email body."""
+    CRITICAL: Put the ENTIRE JSON on ONE line. Use \\n for line breaks in the email body.{self._extra_prompt_sections()}"""
 
     
+    def _extra_prompt_sections(self) -> str:
+        """Build optional extra sections from user settings (tone, guidelines, sample)."""
+        parts = []
+
+        tone = EMAIL.get('ai_tone', 'casual_professional')
+        tone_map = {
+            'professional':        'Formal and professional. No slang, polished sentences.',
+            'friendly':            'Warm and friendly. Like talking to someone you know.',
+            'casual':              'Very casual and relaxed. Short sentences, conversational.',
+            'direct':              'Direct and to the point. No fluff, minimal pleasantries.',
+            'casual_professional': 'Casual but professional. Friendly yet respectful.',
+        }
+        if tone in tone_map:
+            parts.append(f"\nTONE OVERRIDE: {tone_map[tone]}")
+
+        guidelines = EMAIL.get('ai_guidelines', '').strip()
+        if guidelines:
+            parts.append(f"\nADDITIONAL GUIDELINES FROM USER (follow these strictly):\n{guidelines}")
+
+        sample = EMAIL.get('ai_sample_email', '').strip()
+        if sample:
+            parts.append(f"\nSAMPLE EMAIL (match this writing style, length, and structure):\n---\n{sample}\n---")
+
+        return '\n'.join(parts)
+
     def generate_for_all_high_priority(self):
-        """Generate emails for all high priority leads"""
-        print(f"\n🚀 Generating emails for HIGH priority {self.context['niche_plural']}...\n")
-        
-        all_businesses = self.db.get_all_businesses()
-        businesses = [b for b in all_businesses if b.get('Priority') == 'HIGH']
-        
+        """Generate emails for all high priority leads in the active campaign."""
+        import pg_database as _pgdb
+        if not _pgdb._current_campaign_id:
+            raise RuntimeError(
+                "No active campaign set. Activate a campaign before generating emails."
+            )
+
+        cid = _pgdb._current_campaign_id
+        print(f"\n🚀 Generating emails for HIGH priority {self.context['niche_plural']} in campaign {cid}...\n")
+
+        # Only HIGH priority leads that have an email address, within this campaign
+        all_campaign = self.db.get_businesses_by_campaign(cid)
+        businesses = [
+            b for b in all_campaign
+            if str(b.get('Priority', '')).strip().upper() == 'HIGH'
+            and str(b.get('Email', '')).strip()
+        ]
+
         total = len(businesses)
-        
+
         if total == 0:
-            print(f"❌ No {self.context['niche_plural']} ready for email generation")
-            print("💡 Make sure you've:")
-            print("   1. Scraped businesses")
-            print("   2. Analyzed & qualified them")
-            print("   3. Found email addresses")
+            high_count  = sum(1 for b in all_campaign if str(b.get('Priority', '')).strip().upper() == 'HIGH')
+            email_count = sum(1 for b in all_campaign if str(b.get('Email', '')).strip())
+            print(f"❌ No {self.context['niche_plural']} ready for email generation in this campaign.")
+            print(f"   Campaign has {len(all_campaign)} total leads, "
+                  f"{high_count} HIGH priority, {email_count} with email addresses.")
+            print("💡 Make sure you've run Analyze and Find Emails for this campaign first.")
             return
         
         print(f"📋 Generating {total} emails\n")
@@ -304,10 +377,23 @@ class EmailGenerator:
         print("\n🎲 Generating preview email...\n")
         
         all_businesses = self.db.get_all_businesses()
-        businesses = [b for b in all_businesses if b.get('Priority') == 'HIGH']        
+        high_priority_businesses = [
+            b for b in all_businesses
+            if str(b.get('Priority', '')).strip().upper() == 'HIGH'
+        ]        
+        businesses = high_priority_businesses
+        if not businesses:
+            businesses = [
+                b for b in all_businesses
+                if str(b.get('Email', '')).strip()
+            ]
+            if businesses:
+                print(f"⚠️ No HIGH priority rows found for preview. Using {len(businesses)} rows with existing emails.")
 
         if not businesses:
+            emails_count = len([b for b in all_businesses if str(b.get('Email', '')).strip()])
             print(f"❌ No {self.context['niche_plural']} available for preview")
+            print(f"   (Found {emails_count} rows with existing emails in the sheet)")
             return
         
         business = businesses[0]

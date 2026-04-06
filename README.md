@@ -1,412 +1,232 @@
-# 🚀 100% FREE Multi-City Multi-Niche Business Outreach Automation
+# LeadFlow — Automated Cold Email Outreach
 
-**Automate your B2B outreach for ANY business type in ANY city - completely FREE!**
+LeadFlow finds local businesses that need your service, writes them a personalized email using AI, and sends it — all automatically, from a simple web dashboard you open in your browser.
 
-Target real estate agents in Dubai, restaurants in New York, fitness centers in London, or ANY niche in ANY location - just change one config file!
-
-## ✨ What This Does
-
-1. **Scrapes** businesses from Google Maps (any city, any niche)
-2. **Analyzes** their websites automatically (performance, SEO, quality)
-3. **Qualifies** them based on your criteria
-4. **Finds** email addresses (scraping + Hunter.io free tier)
-5. **Generates** personalized AI emails for each business
-6. **Sends** emails via Gmail API (500/day free)
-7. **Tracks** everything in Google Sheets
-
-## 💰 Cost: $0/Month
-
-| Service              | Free Limit          | What We Use It For   |
-| -------------------- | ------------------- | -------------------- |
-| Google Gemini API    | 1,500 requests/day  | AI email generation  |
-| Gmail API            | 500 emails/day      | Sending emails       |
-| Google Sheets API    | Unlimited           | Database             |
-| Google PageSpeed API | 25,000 requests/day | Website analysis     |
-| Playwright           | Unlimited           | Google Maps scraping |
-
-**No credit card needed. No paid subscriptions. 100% FREE.**
-
-## 🎯 Perfect For
-
-- **Freelancers**: Get clients by offering websites, SEO, design
-- **Agencies**: Automate lead generation for any niche
-- **Startups**: Build your client base without ads
-- **Consultants**: Reach potential clients at scale
-
-## 🌍 Works For ANY City + ANY Niche
-
-Just edit `config.py`:
-
-```python
-# Dubai Real Estate
-TARGET = {
-    "city": "Dubai",
-    "niche": "real estate agency",
-    "your_service": "modern websites",
-}
-
-# New York Restaurants
-TARGET = {
-    "city": "New York",
-    "niche": "restaurant",
-    "your_service": "online ordering systems",
-}
-
-# London Gyms
-TARGET = {
-    "city": "London",
-    "niche": "fitness center",
-    "your_service": "member management",
-}
-```
-
-**Everything updates automatically!** Emails, search queries, qualification logic - all adapt to your target.
-
-## 🚀 Quick Start
-
-### 1. Install Python
-
-```bash
-# Verify Python 3.11+
-python --version
-```
-
-### 2. Setup Project
-
-```bash
-# Create folder
-mkdir business-automation
-cd business-automation
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-playwright install chromium
-```
-
-### 3. Get API Keys (All FREE)
-
-**Gemini API** (AI emails):
-
-- Get it: https://makersuite.google.com/app/apikey
-- Add to `.env`: `GEMINI_API_KEY=your-key`
-
-**Google Sheets** (database):
-
-- Enable Google Sheets API
-- Create service account
-- Download `credentials.json`
-
-**Gmail API** (sending):
-
-- Enable Gmail API
-- Create OAuth credentials
-- Download `gmail_credentials.json`
-
-See [SETUP_GUIDE.md](SETUP_GUIDE.md) for detailed instructions!
-
-### 4. Configure Target
-
-```bash
-# Edit config.py
-nano config.py  # or use any text editor
-```
-
-Update:
-
-- City & localities
-- Business niche
-- Your service offering
-- Your email
-
-### 5. Run!
-
-```bash
-python main.py
-```
-
-Choose option 13 for full automation or run steps individually!
-
-## 📊 Features
-
-### 🤖 Smart Qualification
-
-Automatically identifies high-value leads:
-
-- No website = HIGH priority
-- Slow website (<55/100) = HIGH priority
-- Poor SEO (<60/100) = HIGH priority
-- No SSL = HIGH priority
-
-### 🧠 AI Personalization
-
-Each email is unique and personalized:
-
-- Mentions specific business observations
-- Natural, human tone
-- Adapted to your niche/city
-- No marketing jargon
-
-### 📧 Safe Sending
-
-- Respects Gmail limits (500/day)
-- Adds delays between sends
-- Tracks delivery status
-- Prevents spam
-
-### 📈 Complete Tracking
-
-Everything stored in Google Sheets:
-
-- All businesses found
-- Qualification scores
-- Email addresses
-- Generated emails
-- Send status
-
-## 📁 Project Structure
-
-```
-business-automation/
-├── config.py              # ⚠️ EDIT THIS - Target configuration
-├── sheets_database.py     # Google Sheets database
-├── scraper.py            # Google Maps scraper
-├── analyzer.py           # Website analyzer
-├── email_finder.py       # Email discovery
-├── email_generator.py    # AI email generation
-├── email_sender.py       # Gmail sender
-├── main.py              # Control panel
-├── requirements.txt      # Dependencies
-├── .env                 # API keys
-├── credentials.json     # Google Sheets (you create)
-├── gmail_credentials.json  # Gmail API (you create)
-├── SETUP_GUIDE.md       # Detailed setup instructions
-└── CHECKLIST.md         # Quick start checklist
-```
-
-## 🎯 Usage Examples
-
-### Scrape Businesses
-
-```bash
-python main.py
-# Option 1: Scrape businesses
-# Collects name, phone, website, rating, reviews
-```
-
-### Analyze Websites
-
-```bash
-# Option 3: Analyze & qualify
-# Checks performance, SEO, mobile, SSL
-# Assigns priority levels
-```
-
-### Generate Emails
-
-```bash
-# Option 7: Generate emails
-# AI creates personalized email for each business
-```
-
-### Send Batch
-
-```bash
-# Option 9: Send batch
-# Sends via Gmail API
-# Recommendation: 10-20 per day
-```
-
-## 📈 Expected Results
-
-### Week 1
-
-- **Scrape**: 200-300 businesses
-- **Qualify**: 60-80 HIGH priority
-- **Find emails**: 40-50 contacts
-- **Send**: 50-70 emails
-- **Replies**: 5-15 (10-20% rate)
-- **Meetings**: 2-4
-
-### Month 1
-
-- **Total outreach**: 200-400 emails
-- **Reply rate**: 10-25%
-- **Meetings booked**: 8-20
-- **Deals closed**: 2-5
-
-## 🔧 Customization
-
-### Change City
-
-```python
-# In config.py
-TARGET["city"] = "London"
-TARGET["localities"] = ["Westminster", "Chelsea", "Mayfair"]
-```
-
-### Change Niche
-
-```python
-TARGET["niche"] = "dental clinic"
-TARGET["niche_plural"] = "dental clinics"
-TARGET["your_service"] = "appointment booking systems"
-TARGET["your_service_benefit"] = "reduce no-shows"
-```
-
-**All modules update automatically!**
-
-### Adjust Qualification
-
-```python
-# In config.py
-QUALIFICATION = {
-    "min_performance_score": 60,  # Stricter
-    "min_seo_score": 70,          # Stricter
-    "min_rating": 4.0,            # Higher threshold
-}
-```
-
-### Email Settings
-
-```python
-EMAIL = {
-    "max_per_day": 50,      # Gmail allows 500
-    "batch_size": 20,       # Per batch
-    "delay_between_sends": 30,  # Seconds
-}
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-**"credentials.json not found"**
-
-- Download service account JSON from Google Cloud
-- Rename to `credentials.json`
-- Place in project folder
-
-**"GEMINI_API_KEY not found"**
-
-- Create `.env` file (not .env.txt)
-- Add: `GEMINI_API_KEY=your-key`
-
-**"Gmail auth failed"**
-
-- Make sure you created OAuth credentials (not service account)
-- Add yourself as test user in consent screen
-
-**Browser closes immediately**
-
-- Set `headless=False` in scraper.py to see browser
-
-See [SETUP_GUIDE.md](SETUP_GUIDE.md) for more solutions!
-
-## ✅ Best Practices
-
-### Scraping
-
-✅ Run during business hours
-✅ Add 2-3 sec delays
-✅ Don't scrape same area daily
-❌ Don't run 24/7
-
-### Email Sending
-
-✅ Send 10-20 per day
-✅ Wait 24 hours between batches
-✅ Personalize subject lines
-✅ Reply within 24 hours
-❌ Don't send 100+ at once
-❌ Don't use personal email
-
-### Deliverability
-
-✅ Use Gmail account
-✅ Warm up new accounts (5-10/day first week)
-✅ Keep bounce rate < 5%
-✅ Monitor spam reports
-
-## 🎓 Advanced Usage
-
-### Multiple Cities/Niches
-
-Create separate folders:
-
-```
-dubai-real-estate/
-london-restaurants/
-nyc-fitness/
-```
-
-Each with own config.py and credentials!
-
-### A/B Testing
-
-Change email generation prompts in `email_generator.py` to test different styles.
-
-### Custom Qualification
-
-Edit `analyzer.py` to add your own qualification logic.
-
-## 📚 Documentation
-
-- [SETUP_GUIDE.md](SETUP_GUIDE.md) - Detailed setup instructions
-- [CHECKLIST.md](CHECKLIST.md) - Quick start checklist
-- config.py - All configuration options (heavily commented)
-
-## 🤝 Contributing
-
-This is a complete, working system. Feel free to:
-
-- Fork and customize
-- Add new features
-- Improve qualification logic
-- Share your results!
-
-## ⚠️ Disclaimer
-
-- Respect rate limits
-- Follow email best practices
-- Check local regulations
-- Use responsibly
-- Don't spam
-
-## 📄 License
-
-MIT License - Use freely for personal or commercial projects!
-
-## 🎉 Why This Is Better Than Alternatives
-
-| Feature               | This System     | Instantly.ai | Apollo    | Hunter.io   |
-| --------------------- | --------------- | ------------ | --------- | ----------- |
-| **Cost**              | FREE            | $37/mo       | $49/mo    | $49/mo      |
-| **Email Generation**  | AI personalized | Templates    | Templates | N/A         |
-| **City Targeting**    | ANY city        | Manual       | Manual    | N/A         |
-| **Niche Flexibility** | ANY niche       | Manual       | Manual    | N/A         |
-| **Website Analysis**  | Automatic       | Manual       | N/A       | N/A         |
-| **Qualification**     | AI-powered      | Manual       | Manual    | N/A         |
-| **Daily Limit**       | 500             | Unlimited\*  | 500       | 25 searches |
-| **Setup Time**        | 2 hours         | 30 min       | 30 min    | 5 min       |
-| **Customizable**      | 100%            | Limited      | Limited   | No          |
-
-\*Unlimited but charges per email
-
-## 🚀 Get Started Now!
-
-1. Clone/download this repository
-2. Follow [SETUP_GUIDE.md](SETUP_GUIDE.md)
-3. Run `python main.py`
-4. Start getting clients!
-
-**Total cost: $0. Total time: 2 hours setup.**
+No coding required to use it. This guide covers how to set it up the first time.
 
 ---
 
-Made with ❤️ for entrepreneurs who want to grow without expensive tools.
+## What It Does (Plain English)
 
-Questions? Check [SETUP_GUIDE.md](SETUP_GUIDE.md) or open an issue!
+1. You tell it what kind of business to target (e.g. "HVAC companies in Miami")
+2. It searches Google Maps and collects a list of matching businesses
+3. It checks each business's website — is it slow? Bad SEO? No website at all?
+4. It finds the email address for each business
+5. It uses AI to write a unique, personalized email for each one — mentioning their specific website issues
+6. It sends the emails through your email account
+7. You can see who opened your email and who replied, right in the dashboard
+
+---
+
+## What You Need Before Starting
+
+You need four things set up before you can run this. All of them have free options.
+
+### 1. Python (the programming language that runs this app)
+Just needs to be installed once. Download it from **https://python.org/downloads** — get version 3.11 or newer.
+
+> **Windows tip:** When installing, check the box that says "Add Python to PATH" before clicking Install.
+
+### 2. A Database (where your leads and emails are stored)
+This app stores all your leads in a PostgreSQL database. The easiest free option is **Supabase**:
+- Go to https://supabase.com and create a free account
+- Create a new project
+- Go to **Settings → Database** and copy the "Connection string" — it looks like: `postgresql://postgres:yourpassword@...`
+
+### 3. An OpenRouter API Key (powers the AI email writing)
+- Go to https://openrouter.ai and create a free account
+- Click your profile → **Keys** → create a new key
+- The default AI model used is free — no credit card needed
+
+### 4. An Email Account to Send From
+Any business email works (cPanel, Outlook, Zoho, Yahoo, etc.). You just need to know:
+- Your email address
+- Your email password
+- Your email server's SMTP address (your hosting provider can tell you this)
+
+---
+
+## Setup (One Time Only)
+
+### Step 1 — Download the project
+
+Download or clone this project to your computer. Open a terminal (Command Prompt on Windows, Terminal on Mac) and navigate to the project folder.
+
+### Step 2 — Install the required software
+
+Copy and paste these commands one at a time:
+
+```
+python -m venv venv
+```
+```
+venv\Scripts\activate
+```
+*(On Mac/Linux, use: `source venv/bin/activate` instead)*
+
+```
+pip install -r requirements.txt -r requirements_api.txt
+```
+```
+playwright install chromium
+```
+
+This installs everything the app needs. It only takes a few minutes.
+
+### Step 3 — Create your secrets file
+
+In the project folder, create a new text file called `.env` (exactly that — a dot, then "env", no other extension).
+
+Paste this into it and fill in your own values:
+
+```
+DATABASE_URL=postgresql://your-database-url-here
+OPENROUTER_API_KEY=your-openrouter-key-here
+SMTP_PASSWORD=your-email-password-here
+```
+
+That's it. Three lines. Save the file.
+
+> Your email password lives only in this file on your computer. It is never shared anywhere.
+
+### Step 4 — Enter your email settings
+
+Open the file `config.py` in any text editor (Notepad works fine) and find this section:
+
+```python
+EMAIL = {
+    "your_name":  "Mubeen",
+    "your_email": "mubeen@revenuelyft.com",
+    "smtp_host":  "mail.revenuelyft.com",
+    "smtp_port":  465,
+    "smtp_user":  "mubeen@revenuelyft.com",
+    ...
+}
+```
+
+Replace with your own name, email address, and SMTP server. If you're not sure what your SMTP server address is, ask your email hosting provider or look it up below:
+
+| Email provider | SMTP server address | Port |
+|---|---|---|
+| cPanel / Namecheap | `mail.yourdomain.com` | 465 |
+| Outlook / Office 365 | `smtp.office365.com` | 587 |
+| Zoho Mail | `smtp.zoho.com` | 465 |
+| Yahoo Mail | `smtp.mail.yahoo.com` | 465 |
+
+### Step 5 — Start the app
+
+In your terminal, run:
+
+```
+python api.py
+```
+
+Then open your browser and go to: **http://localhost:8000**
+
+You'll see the LeadFlow landing page. Click **Get Started** to create your account.
+
+---
+
+## Using the Dashboard
+
+Once you're logged in, here's what to do:
+
+### 1. Create a Campaign
+A campaign is one targeting goal — for example "HVAC companies in Miami".
+
+- Click **Campaigns** → **New Campaign**
+- Enter the city, the type of business you're targeting, the areas/neighborhoods to search, and what service you're offering
+- Click **Activate** on the campaign to make it the active one
+
+### 2. Run the Pipeline
+The pipeline runs in steps. You can run them one at a time or all at once.
+
+| Step | What it does |
+|---|---|
+| **Scrape** | Searches Google Maps and collects businesses |
+| **Analyze** | Checks each business's website for problems |
+| **Find Emails** | Finds email addresses for each business |
+| **Generate Emails** | AI writes a personalized email for each business |
+| **Send** | Sends the emails through your email account |
+
+You'll see live updates in the log panel at the bottom of the screen as each step runs.
+
+### 3. Review Your Leads
+Click **Leads** to see every business that was found. Each one shows:
+- Their name, location, rating, and website
+- Priority level (HIGH / MEDIUM / LOW)
+- Whether an email was found and sent
+
+**Priority levels explained:**
+- **HIGH** — best leads to contact. Either no website at all, or their website is slow / bad for SEO
+- **MEDIUM** — some issues, worth reaching out
+- **LOW** — their website looks fine, probably not a great prospect
+
+### 4. Check Your Inbox
+Click **Inbox** → **Sync** to pull in any replies from your email account. You can read and reply to messages directly in the dashboard.
+
+---
+
+## Adjusting What the AI Writes
+
+In the dashboard, go to **Settings → Email Creative** to control how the AI writes your emails:
+
+- **Tone** — casual, professional, or casual-professional (default)
+- **Custom guidelines** — add specific instructions like "always mention we're a local company"
+- **Sample email** — paste an example of how you like to write, and the AI will match your style
+- **Template mode** — if you'd prefer to write the email yourself with no AI, switch to Template and type your own subject and body
+
+---
+
+## Fixing Common Problems
+
+**"DATABASE_URL not set"**
+Your `.env` file is missing or in the wrong folder. Make sure it's in the same folder as `api.py`.
+
+**"OPENROUTER_API_KEY not set"**
+Same as above — check your `.env` file has the right key.
+
+**Email sending fails**
+- Double-check the `smtp_host`, `smtp_port`, and `smtp_user` in `config.py`
+- Make sure `SMTP_PASSWORD` is in your `.env` file
+- If port 465 doesn't work, try 587
+
+**"No active campaign"**
+Go to the Campaigns tab, create a campaign, and click Activate on it.
+
+**The scraper opens a browser window and then immediately closes**
+Open `config.py` and change `"visible_browser": False` to `"visible_browser": True`. This lets you see what's happening in the browser window and spot any errors.
+
+---
+
+## Tips for Getting Replies
+
+- **Send 10–20 emails per day** — sending hundreds at once is the fastest way to get flagged as spam
+- **In your first week**, send only 5–10 per day while your account warms up
+- **Reply quickly** — if someone responds, reply within a few hours while you're fresh in their mind
+- **Watch your open rates** — if nobody is opening your emails, the subject line probably needs work. Try the AI tone settings or write your own subject lines
+
+---
+
+## For Developers
+
+The app is a Python FastAPI server (`api.py`) that serves three HTML pages from the `static/` folder and exposes a REST API. User accounts and campaigns are stored in SQLite (`app.db`). All lead/email data is stored in PostgreSQL. The scraper uses Playwright (headless Chromium). AI emails are generated via OpenRouter's API.
+
+To run with Docker:
+
+```bash
+docker build -t leadflow .
+docker run -p 8000:8000 \
+  -e DATABASE_URL=postgresql://... \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -e SMTP_PASSWORD=... \
+  leadflow
+```
+
+See `SETUP_GUIDE.md` for full technical details and `deploy/` for server deployment scripts.
+
+---
+
+## License
+
+MIT — free to use for personal or commercial projects.

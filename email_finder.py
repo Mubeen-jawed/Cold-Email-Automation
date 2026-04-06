@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import re
 from urllib.parse import urljoin, urlparse
 import time
-from sheets_database import SheetsDatabase
+from pg_database import PostgresDatabase as SheetsDatabase
 from config import TARGET
 import os
 
@@ -179,14 +179,22 @@ class EmailFinder:
     
     def find_emails_for_businesses(self, priority='HIGH'):
         """Find emails for all qualified businesses"""
-        print(f"\n🚀 Finding emails for {priority} priority {self.niche}s...\n")
-        
-        
+        import pg_database as _pgdb
+        if not _pgdb._current_campaign_id:
+            raise RuntimeError(
+                "No active campaign set. Activate a campaign before running Find Emails."
+            )
+
+        print(f"\n🚀 Finding emails for {priority} priority {self.niche}s in campaign {_pgdb._current_campaign_id}...\n")
+        all_businesses = self.db.get_businesses_by_campaign(_pgdb._current_campaign_id)
+
         if priority == 'HIGH':
-            all_businesses = self.db.get_all_businesses()
-            businesses = [b for b in all_businesses if b.get('Priority') == 'HIGH']
+            businesses = [
+                b for b in all_businesses
+                if str(b.get('Priority', '')).strip().upper() == 'HIGH'
+            ]
         else:
-            businesses = self.db.get_all_businesses()
+            businesses = all_businesses
 
         businesses = [b for b in businesses if not b.get('Email') and b.get('Website')]
         

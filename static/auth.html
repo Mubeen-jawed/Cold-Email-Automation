@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LeadFlow — Sign in</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    .left-bg {
+      background: radial-gradient(ellipse 120% 100% at 30% 80%, #312e81 0%, #0f172a 60%);
+    }
+    .input-field {
+      width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0;
+      border-radius: 10px; padding: 11px 14px; font-size: 14px; color: #0f172a;
+      outline: none; transition: border-color .15s;
+    }
+    .input-field:focus { border-color: #6366f1; background: #fff; }
+    .input-field::placeholder { color: #94a3b8; }
+    .btn-primary {
+      width: 100%; background: #4f46e5; color: #fff; font-weight: 600;
+      padding: 12px; border-radius: 10px; border: none; cursor: pointer;
+      font-size: 14px; transition: background .15s;
+    }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-primary:disabled { background: #818cf8; cursor: not-allowed; }
+    .error-box { background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 8px; padding: 10px 14px; font-size: 13px; display: none; }
+    .divider { display: flex; align-items: center; gap: 12px; color: #94a3b8; font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+  </style>
+</head>
+<body class="bg-white h-screen flex overflow-hidden">
+
+<!-- ── LEFT PANEL (branding) ─────────────────────────────────────────────── -->
+<div class="hidden lg:flex lg:w-[45%] left-bg flex-col justify-between p-12">
+  <a href="/" class="flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold text-sm">L</div>
+    <span class="text-white font-semibold text-lg">LeadFlow</span>
+  </a>
+
+  <div>
+    <blockquote class="text-white text-2xl font-bold leading-snug mb-6">
+      &ldquo;I booked 3 new clients in the first week. The AI emails actually feel human.&rdquo;
+    </blockquote>
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-full bg-indigo-500/30 border border-indigo-400/30 flex items-center justify-center text-white font-bold">M</div>
+      <div>
+        <p class="text-white text-sm font-semibold">Marcus T.</p>
+        <p class="text-indigo-300 text-xs">Web Design Agency, Miami</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-3 gap-4">
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+      <p class="text-2xl font-black text-white">50K+</p>
+      <p class="text-xs text-slate-400 mt-1">Leads scraped</p>
+    </div>
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+      <p class="text-2xl font-black text-white">12K+</p>
+      <p class="text-xs text-slate-400 mt-1">Emails sent</p>
+    </div>
+    <div class="bg-white/5 border border-white/10 rounded-xl p-4">
+      <p class="text-2xl font-black text-white">1.2K+</p>
+      <p class="text-xs text-slate-400 mt-1">Active users</p>
+    </div>
+  </div>
+</div>
+
+<!-- ── RIGHT PANEL (form) ─────────────────────────────────────────────────── -->
+<div class="flex-1 flex flex-col items-center justify-center px-6 py-12 overflow-y-auto">
+
+  <!-- Mobile logo -->
+  <a href="/" class="flex lg:hidden items-center gap-2 mb-10">
+    <div class="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">L</div>
+    <span class="font-semibold text-slate-900">LeadFlow</span>
+  </a>
+
+  <div class="w-full max-w-sm">
+
+    <!-- Tabs -->
+    <div class="flex bg-slate-100 rounded-xl p-1 mb-7">
+      <button id="tab-signin" onclick="showTab('signin')"
+        class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow-sm text-slate-900 transition-all">
+        Sign in
+      </button>
+      <button id="tab-signup" onclick="showTab('signup')"
+        class="flex-1 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all">
+        Create account
+      </button>
+    </div>
+
+    <!-- Error -->
+    <div id="error-msg" class="error-box mb-5"></div>
+
+    <!-- Sign In form -->
+    <form id="form-signin" onsubmit="handleSignin(event)" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+        <input id="si-email" type="email" placeholder="you@example.com" required class="input-field"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+        <input id="si-password" type="password" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required class="input-field"/>
+      </div>
+      <button type="submit" id="btn-signin" class="btn-primary mt-2">Sign in</button>
+    </form>
+
+    <!-- Sign Up form -->
+    <form id="form-signup" onsubmit="handleSignup(event)" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Your name</label>
+        <input id="su-name" type="text" placeholder="Alex Johnson" required class="input-field"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+        <input id="su-email" type="email" placeholder="you@example.com" required class="input-field"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+        <input id="su-password" type="password" placeholder="At least 8 characters" required minlength="8" class="input-field"/>
+      </div>
+      <button type="submit" id="btn-signup" class="btn-primary mt-2">Create account</button>
+    </form>
+
+    <!-- OR divider -->
+    <div class="divider my-5">or</div>
+
+    <!-- Google OAuth -->
+    <a href="/api/auth/google"
+      class="flex items-center justify-center gap-3 w-full border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 font-medium py-3 px-4 rounded-xl transition-all text-sm">
+      <svg width="18" height="18" viewBox="0 0 18 18">
+        <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
+        <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+        <path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/>
+        <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.96l3.007 2.332C4.672 5.163 6.656 3.58 9 3.58z"/>
+      </svg>
+      Continue with Google
+    </a>
+
+    <!-- Footer note -->
+    <p class="text-center text-xs text-slate-400 mt-6 leading-relaxed">
+      By continuing you agree to our
+      <a href="#" class="text-indigo-600 hover:underline">Terms of Service</a>
+      and
+      <a href="#" class="text-indigo-600 hover:underline">Privacy Policy</a>.
+    </p>
+
+  </div>
+</div>
+
+<script>
+// Read ?mode= from URL
+const params = new URLSearchParams(location.search);
+if (params.get('mode') === 'signup') showTab('signup');
+
+// Handle ?error= from Google OAuth
+const authError = params.get('error');
+if (authError) {
+  const msg = authError === 'google_cancelled'
+    ? 'Google sign-in was cancelled.'
+    : 'Google sign-in failed. Please try again.';
+  showError(msg);
+}
+
+function showTab(tab) {
+  const isSignin = tab === 'signin';
+  document.getElementById('form-signin').classList.toggle('hidden', !isSignin);
+  document.getElementById('form-signup').classList.toggle('hidden', isSignin);
+
+  const activeClass = 'bg-white shadow-sm text-slate-900 font-semibold';
+  const inactiveClass = 'text-slate-500 font-medium';
+
+  document.getElementById('tab-signin').className =
+    `flex-1 py-2 text-sm rounded-lg transition-all ${isSignin ? activeClass : inactiveClass}`;
+  document.getElementById('tab-signup').className =
+    `flex-1 py-2 text-sm rounded-lg transition-all ${!isSignin ? activeClass : inactiveClass}`;
+
+  clearError();
+  // Update URL without reload
+  history.replaceState(null, '', isSignin ? '/auth' : '/auth?mode=signup');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function clearError() {
+  document.getElementById('error-msg').style.display = 'none';
+}
+
+async function handleSignin(e) {
+  e.preventDefault();
+  clearError();
+  const btn = document.getElementById('btn-signin');
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    const r = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email:    document.getElementById('si-email').value,
+        password: document.getElementById('si-password').value,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) { showError(data.detail || 'Sign in failed'); return; }
+    window.location.href = '/dashboard';
+  } catch {
+    showError('Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+  }
+}
+
+async function handleSignup(e) {
+  e.preventDefault();
+  clearError();
+  const btn = document.getElementById('btn-signup');
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const r = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:     document.getElementById('su-name').value,
+        email:    document.getElementById('su-email').value,
+        password: document.getElementById('su-password').value,
+      }),
+    });
+    const data = await r.json();
+    if (!r.ok) { showError(data.detail || 'Sign up failed'); return; }
+    window.location.href = '/dashboard';
+  } catch {
+    showError('Something went wrong. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Create account';
+  }
+}
+
+// Auto-redirect if already logged in
+fetch('/api/auth/me').then(r => {
+  if (r.ok) window.location.href = '/dashboard';
+}).catch(() => {});
+</script>
+</body>
+</html>

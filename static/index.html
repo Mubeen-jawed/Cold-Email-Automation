@@ -1,0 +1,2882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LeadFlow — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+    .nav-item.active { background: rgba(99,102,241,.18); color: #a5b4fc; }
+    .nav-item:not(.active):hover { background: rgba(255,255,255,.05); }
+    .log-line { animation: fadein .15s ease; }
+    @keyframes fadein { from { opacity:0; transform:translateY(3px); } to { opacity:1; } }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    input, select, textarea { color-scheme: dark; }
+    .step-card { transition: border-color .15s; }
+    .step-card:hover { border-color: #475569; }
+    .campaign-details { transition: max-height .3s ease, opacity .2s ease; overflow: hidden; }
+    .campaign-details.closed { max-height: 0; opacity: 0; }
+    .campaign-details.open { max-height: 9999px; opacity: 1; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 h-screen flex overflow-hidden">
+
+<!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+<aside class="w-56 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
+  <div class="px-4 py-5 border-b border-slate-800 flex items-center gap-2.5">
+    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0">L</div>
+    <div>
+      <h1 class="text-sm font-bold text-white leading-tight">LeadFlow</h1>
+      <p class="text-xs text-slate-500">Outreach Automation</p>
+    </div>
+  </div>
+
+  <nav class="flex-1 p-2 space-y-0.5 mt-2">
+    <button onclick="navigate('dashboard')" id="nav-dashboard"
+      class="nav-item active w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </button>
+    <button onclick="navigate('campaigns')" id="nav-campaigns"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18"/><circle cx="6" cy="7" r="1.5" fill="currentColor" stroke="none"/><circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="6" cy="17" r="1.5" fill="currentColor" stroke="none"/></svg>
+      Campaigns
+      <span id="camp-count-badge" class="ml-auto text-xs bg-slate-700 text-slate-400 rounded-full px-1.5 py-0.5 leading-none hidden"></span>
+    </button>
+    <button onclick="navigate('emails')" id="nav-emails"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      Emails
+    </button>
+    <button onclick="navigate('leads')" id="nav-leads"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      My Leads
+    </button>
+    <button onclick="navigate('inbox')" id="nav-inbox"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+      Inbox
+      <span id="inbox-badge" class="hidden ml-auto text-xs bg-red-500 text-white rounded-full px-1.5 py-0.5 font-bold leading-none"></span>
+    </button>
+    <button onclick="navigate('logs')" id="nav-logs"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h10M4 18h6"/></svg>
+      Live Logs
+      <span id="log-badge" class="hidden ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+    </button>
+    <button onclick="navigate('settings')" id="nav-settings"
+      class="nav-item w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors">
+      <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Settings
+    </button>
+  </nav>
+
+  <!-- Pipeline status pill -->
+  <div class="p-3 border-t border-slate-800">
+    <div class="bg-slate-800/80 rounded-lg px-3 py-2.5 text-xs space-y-1.5">
+      <div class="flex items-center gap-2">
+        <div id="status-dot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></div>
+        <span id="status-text" class="text-slate-400 font-medium flex-1">Idle</span>
+        <button id="stop-btn" onclick="stopPipeline()" class="hidden text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded px-1.5 py-0.5 transition-colors font-medium">
+          Stop
+        </button>
+      </div>
+      <div id="status-step" class="text-slate-500 leading-tight hidden truncate"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main class="flex-1 flex flex-col overflow-hidden">
+
+  <!-- Top bar -->
+  <header class="bg-slate-900/80 border-b border-slate-800 px-6 py-2.5 flex items-center gap-3 shrink-0">
+    <div id="error-banner"
+      class="hidden flex-1 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded px-3 py-1"></div>
+    <div class="ml-auto flex items-center gap-3">
+      <div class="flex items-center gap-2 pl-3">
+        <div id="user-avatar"
+          class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+          ?
+        </div>
+        <span id="user-name" class="text-xs text-slate-400 hidden sm:block"></span>
+        <button onclick="logout()"
+          class="text-xs text-slate-500 hover:text-red-400 transition-colors px-2 py-1 rounded hover:bg-slate-800 ml-1">
+          Sign out
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Pages -->
+  <div class="flex-1 overflow-y-auto">
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- DASHBOARD PAGE                                                     -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-dashboard" class="p-6 space-y-6">
+
+      <!-- Pipeline notice banner (shown when scrape stops early or is stopped manually) -->
+      <div id="pipeline-notice-dash" class="hidden items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
+        <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        <div class="flex-1 min-w-0">
+          <p id="pipeline-notice-dash-name" class="text-xs font-semibold text-amber-300 mb-0.5"></p>
+          <p id="pipeline-notice-dash-msg" class="text-xs text-amber-200/80"></p>
+        </div>
+        <button onclick="dismissNotice()" class="text-amber-400/60 hover:text-amber-300 transition-colors shrink-0">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+          <p class="text-xs text-slate-400 mb-1">Total Businesses Found</p>
+          <p id="stat-total" class="text-2xl font-bold text-white">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+          <p class="text-xs text-slate-400 mb-1">High Priority Leads</p>
+          <p id="stat-high" class="text-2xl font-bold text-amber-400">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+          <p class="text-xs text-slate-400 mb-1">Emails Ready to Send</p>
+          <p id="stat-emails" class="text-2xl font-bold text-blue-400">—</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
+          <p class="text-xs text-slate-400 mb-1">Emails Sent</p>
+          <p id="stat-sent" class="text-2xl font-bold text-indigo-400">—</p>
+        </div>
+      </div>
+
+      <!-- Activity widget -->
+      <div id="activity-widget" class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden">
+        <!-- Header -->
+        <div class="px-4 py-3 flex items-center justify-between border-b border-slate-700/50">
+          <div class="flex items-center gap-2.5">
+            <div id="aw-dot" class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></div>
+            <span id="aw-title" class="text-sm font-medium text-slate-200">Pipeline is idle</span>
+          </div>
+          <button onclick="navigate('logs')" class="text-xs text-slate-500 hover:text-indigo-400 transition-colors">
+            View all activity &rarr;
+          </button>
+        </div>
+        <!-- Activity items -->
+        <div id="aw-feed" class="divide-y divide-slate-700/30">
+          <div class="px-4 py-3 text-xs text-slate-500 italic">No recent activity. Run the pipeline to get started.</div>
+        </div>
+      </div>
+
+      <!-- Campaign card -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-base font-semibold text-white">Active Campaign</h2>
+          <button onclick="loadStats()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors px-2 py-1 rounded hover:bg-slate-800">
+            Refresh stats
+          </button>
+        </div>
+
+        <div id="campaign-card" class="bg-slate-800/60 border border-slate-700/60 rounded-xl overflow-hidden">
+
+          <!-- Card header — always visible -->
+          <div class="px-5 py-4 flex items-center gap-4 cursor-pointer select-none" onclick="toggleCampaign()">
+            <div class="w-9 h-9 bg-indigo-600/20 border border-indigo-500/30 rounded-lg flex items-center justify-center shrink-0 text-indigo-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span id="camp-title" class="text-sm font-semibold text-white">Loading...</span>
+                <span id="camp-status-pill" class="hidden text-xs px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 animate-pulse">Running</span>
+              </div>
+              <p id="camp-subtitle" class="text-xs text-slate-400 mt-0.5 truncate">Click to view details and run the pipeline</p>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span id="camp-chevron" class="text-slate-400 transition-transform duration-200">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+              </span>
+            </div>
+          </div>
+
+          <!-- Expandable body -->
+          <div id="campaign-details" class="campaign-details closed border-t border-slate-700/60">
+            <div class="p-5 space-y-6">
+
+              <!-- ── Details section ── -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Campaign Details</h3>
+                  <button id="edit-btn" onclick="toggleEditMode()" class="text-xs text-indigo-400 hover:text-indigo-300 px-3 py-1 rounded-lg border border-indigo-500/30 hover:bg-indigo-500/10 transition-colors">
+                    Edit Campaign
+                  </button>
+                </div>
+
+                <!-- View mode -->
+                <div id="details-view" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div class="bg-slate-900/50 rounded-lg p-4 space-y-2.5">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Location</p>
+                    <div><p class="text-xs text-slate-500">City</p><p id="v-city" class="text-sm text-white font-medium">—</p></div>
+                    <div><p class="text-xs text-slate-500">Country</p><p id="v-country" class="text-sm text-white">—</p></div>
+                    <div>
+                      <p class="text-xs text-slate-500 mb-1">Areas</p>
+                      <p id="v-localities-count" class="text-sm text-white">—</p>
+                      <details class="mt-1">
+                        <summary class="text-xs text-indigo-400 cursor-pointer hover:text-indigo-300">View all areas</summary>
+                        <p id="v-localities" class="text-xs text-slate-400 mt-1.5 leading-relaxed"></p>
+                      </details>
+                    </div>
+                  </div>
+                  <div class="bg-slate-900/50 rounded-lg p-4 space-y-2.5">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Target Business</p>
+                    <div><p class="text-xs text-slate-500">Business Type</p><p id="v-niche" class="text-sm text-white font-medium">—</p></div>
+                    <div><p class="text-xs text-slate-500">Industry</p><p id="v-industry" class="text-sm text-white">—</p></div>
+                  </div>
+                  <div class="bg-slate-900/50 rounded-lg p-4 space-y-2.5">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Your Offer</p>
+                    <div><p class="text-xs text-slate-500">Your Service</p><p id="v-service" class="text-sm text-white font-medium">—</p></div>
+                    <div><p class="text-xs text-slate-500">Key Benefit</p><p id="v-benefit" class="text-sm text-white">—</p></div>
+                    <div><p class="text-xs text-slate-500">Their Problem</p><p id="v-pain" class="text-sm text-white">—</p></div>
+                  </div>
+                </div>
+
+                <!-- Edit mode (hidden by default) -->
+                <div id="details-edit" class="hidden space-y-4">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1.5">City / Region Name</label>
+                      <input id="e-city" type="text" placeholder="e.g. Miami"
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1.5">Country</label>
+                      <input id="e-country" type="text" placeholder="e.g. USA"
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1.5">Business Type <span class="text-slate-500">(singular)</span></label>
+                      <input id="e-niche" type="text" placeholder="e.g. plumber"
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                    </div>
+                    <div>
+                      <label class="block text-xs text-slate-400 mb-1.5">Business Type <span class="text-slate-500">(plural)</span></label>
+                      <input id="e-niche-plural" type="text" placeholder="e.g. plumbers"
+                        class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Industry</label>
+                    <input id="e-industry" type="text" placeholder="e.g. home services"
+                      class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">What service are you selling?</label>
+                    <input id="e-service" type="text" placeholder="e.g. website design"
+                      class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Main benefit for the client</label>
+                    <input id="e-benefit" type="text" placeholder="e.g. get more leads online"
+                      class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">What problem do they have?</label>
+                    <input id="e-pain" type="text" placeholder="e.g. no online presence"
+                      class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+                  </div>
+                  <div>
+                    <label class="block text-xs text-slate-400 mb-1.5">Target Areas <span class="text-slate-500">(one per line)</span></label>
+                    <textarea id="e-localities" rows="6"
+                      class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 resize-y font-mono"
+                      placeholder="Miami Beach&#10;Coral Gables&#10;Brickell&#10;..."></textarea>
+                  </div>
+                  <div class="flex gap-3">
+                    <button onclick="saveCampaign()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+                      Save Changes
+                    </button>
+                    <button onclick="toggleEditMode()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-lg transition-colors">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ── Email Preview ── -->
+              <div>
+                <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Email Preview</h3>
+                <div class="bg-slate-900/70 border border-slate-700/50 rounded-lg p-4">
+                  <div class="mb-2">
+                    <span class="text-xs text-slate-500">Subject: </span>
+                    <span id="prev-subject" class="text-xs text-slate-200 italic">—</span>
+                  </div>
+                  <div class="border-t border-slate-700/50 pt-3">
+                    <p id="prev-body" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line">—</p>
+                  </div>
+                  <p class="text-xs text-slate-600 mt-3">* This is a sample preview. The AI will personalize each email with the specific business name and details.</p>
+                </div>
+              </div>
+
+              <!-- ── Pipeline ── -->
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Run Pipeline</h3>
+                  <div class="flex items-center gap-2">
+                    <input type="number" id="full-max" value="20" min="1" max="100"
+                      class="w-14 text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-center focus:outline-none focus:border-indigo-500"/>
+                    <span class="text-xs text-slate-500">results/area</span>
+                    <button onclick="runFull()"
+                      class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-4 py-1.5 rounded-lg transition-colors">
+                      Run All Steps
+                    </button>
+                  </div>
+                </div>
+                <div class="space-y-2">
+
+                  <!-- Step 1 -->
+                  <div class="step-card bg-slate-900/50 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center gap-4">
+                    <div class="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-bold text-blue-400">1</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white">Find Businesses</p>
+                      <p class="text-xs text-slate-400">Search Google Maps for businesses in your target areas</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <input type="number" id="scrape-max" value="20" min="1" max="100"
+                        class="w-14 text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-center focus:outline-none focus:border-indigo-500"/>
+                      <span class="text-xs text-slate-500">per area</span>
+                      <button onclick="runStep('scrape')"
+                        class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                        Start
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 2 -->
+                  <div class="step-card bg-slate-900/50 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center gap-4">
+                    <div class="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-bold text-blue-400">2</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white">Check Website Quality</p>
+                      <p class="text-xs text-slate-400">Score each business's website to find the best prospects</p>
+                    </div>
+                    <button onclick="runStep('analyze')"
+                      class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors shrink-0 whitespace-nowrap">
+                      Start
+                    </button>
+                  </div>
+
+                  <!-- Step 3 -->
+                  <div class="step-card bg-slate-900/50 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center gap-4">
+                    <div class="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-bold text-blue-400">3</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white">Find Contact Emails</p>
+                      <p class="text-xs text-slate-400">Automatically discover email addresses from business websites</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <select id="email-priority"
+                        class="text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 focus:outline-none focus:border-indigo-500">
+                        <option value="HIGH">Top leads only</option>
+                        <option value="ALL">All leads</option>
+                      </select>
+                      <button onclick="runStep('find-emails')"
+                        class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                        Start
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Step 4 -->
+                  <div class="step-card bg-slate-900/50 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center gap-4">
+                    <div class="w-7 h-7 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-bold text-blue-400">4</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white">Write Personalised Emails</p>
+                      <p class="text-xs text-slate-400">AI writes a unique cold email for each lead based on their website</p>
+                    </div>
+                    <button onclick="runStep('generate-emails')"
+                      class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors shrink-0 whitespace-nowrap">
+                      Start
+                    </button>
+                  </div>
+
+                  <!-- Step 5 -->
+                  <div class="step-card bg-slate-900/50 border border-emerald-700/30 rounded-lg px-4 py-3 flex items-center gap-4">
+                    <div class="w-7 h-7 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                      <span class="text-xs font-bold text-emerald-400">5</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-white">Send Emails</p>
+                      <p class="text-xs text-slate-400">Send your outreach emails and track who was contacted</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <input type="number" id="send-batch" value="20" min="1" max="500"
+                        class="w-14 text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1.5 text-center focus:outline-none focus:border-indigo-500"/>
+                      <span class="text-xs text-slate-500">emails</span>
+                      <button onclick="runStep('send-emails')"
+                        class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                        Send
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- EMAILS PAGE                                                        -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-emails" class="p-6 hidden">
+      <div class="max-w-3xl">
+
+        <div class="mb-6">
+          <h2 class="text-lg font-semibold">Email Setup</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Choose how emails are written for each lead — AI-personalised or a fixed template.</p>
+        </div>
+
+        <!-- Mode selector -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+          <button id="mode-ai-btn" onclick="selectEmailMode('ai')"
+            class="email-mode-btn border-2 border-indigo-500 bg-indigo-500/10 rounded-xl p-4 text-left transition-all">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              </div>
+              <span class="text-sm font-semibold text-white">AI-Written</span>
+              <span class="ml-auto text-xs bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/30">Recommended</span>
+            </div>
+            <p class="text-xs text-slate-400">The AI reads each business's website and writes a unique, personalised email for every lead.</p>
+          </button>
+          <button id="mode-tpl-btn" onclick="selectEmailMode('template')"
+            class="email-mode-btn border-2 border-slate-700 bg-slate-800/40 rounded-xl p-4 text-left transition-all hover:border-slate-600">
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-8 h-8 rounded-lg bg-slate-700 border border-slate-600 flex items-center justify-center">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              </div>
+              <span class="text-sm font-semibold text-white">Fixed Template</span>
+            </div>
+            <p class="text-xs text-slate-400">Write one email template with variables. The same structure is used for every lead — fast and consistent.</p>
+          </button>
+        </div>
+
+        <!-- AI settings panel -->
+        <div id="email-ai-panel" class="space-y-4">
+
+          <!-- Tone -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-white mb-1">Tone</h3>
+            <p class="text-xs text-slate-400 mb-3">How should the emails sound?</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="tone-btns">
+              <button onclick="selectTone('casual_professional')" data-tone="casual_professional"
+                class="tone-btn text-xs px-3 py-2 rounded-lg border border-indigo-500 bg-indigo-500/15 text-indigo-300 transition-all">
+                Casual & Professional
+              </button>
+              <button onclick="selectTone('friendly')" data-tone="friendly"
+                class="tone-btn text-xs px-3 py-2 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500 transition-all">
+                Friendly
+              </button>
+              <button onclick="selectTone('professional')" data-tone="professional"
+                class="tone-btn text-xs px-3 py-2 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500 transition-all">
+                Professional
+              </button>
+              <button onclick="selectTone('direct')" data-tone="direct"
+                class="tone-btn text-xs px-3 py-2 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500 transition-all">
+                Direct
+              </button>
+            </div>
+          </div>
+
+          <!-- Guidelines -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-white mb-1">Guidelines for the AI</h3>
+            <p class="text-xs text-slate-400 mb-3">Tell the AI exactly what to do, what to avoid, what to mention, your style, links to include, etc. The AI will follow these for every email it writes.</p>
+            <textarea id="ai-guidelines" rows="6" placeholder="Examples:
+- Always mention our case study: 'We helped a Miami plumber get 12 new leads in 30 days'
+- Include my LinkedIn: linkedin.com/in/yourname at the bottom
+- Do NOT mention pricing
+- Keep emails under 100 words
+- End with a simple yes/no question
+- Never use the word 'leverage'"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-y font-mono leading-relaxed"></textarea>
+          </div>
+
+          <!-- Sample email -->
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-white mb-1">Sample Email <span class="text-slate-500 font-normal">(optional)</span></h3>
+            <p class="text-xs text-slate-400 mb-3">Paste a real email you've written or love. The AI will match its length, structure, and writing style exactly.</p>
+            <textarea id="ai-sample" rows="10" placeholder="Paste a sample cold email here...
+
+Hi there,
+
+I was checking out your Google listing and noticed you don't have a website — just a Maps profile.
+
+I help plumbers in Miami get a simple one-page site in 3 days that starts getting calls. One of my clients went from 0 online leads to 8 a month.
+
+Worth a quick chat?
+
+Best,
+Mubeen"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-y font-mono leading-relaxed"></textarea>
+          </div>
+        </div>
+
+        <!-- Template settings panel -->
+        <div id="email-tpl-panel" class="space-y-4 hidden">
+
+          <!-- Variables reference -->
+          <div class="bg-slate-900/60 border border-slate-700/40 rounded-xl p-4">
+            <p class="text-xs font-semibold text-slate-300 mb-2">Available Variables</p>
+            <div class="flex flex-wrap gap-1.5">
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{business_name}')">{business_name}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{city}')">{city}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{website}')">{website}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{rating}')">{rating}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{your_name}')">{your_name}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{your_service}')">{your_service}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{pain_point}')">{pain_point}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{benefit}')">{benefit}</span>
+              <span class="text-xs font-mono bg-slate-800 border border-slate-700 text-indigo-300 px-2 py-1 rounded cursor-pointer hover:bg-slate-700 transition-colors" onclick="insertVar('{niche}')">{niche}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">Click a variable to insert it at the cursor position in the body editor.</p>
+          </div>
+
+          <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Subject Line</label>
+              <input id="tpl-subject" type="text"
+                placeholder='e.g. Quick question about {business_name}'
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Email Body</label>
+              <textarea id="tpl-body" rows="16"
+                placeholder="Hi there,&#10;&#10;I noticed {business_name} in {city} might be struggling with {pain_point}.&#10;&#10;I help {niche}s with {your_service} — it usually helps them {benefit}.&#10;&#10;Worth a quick chat?&#10;&#10;Best,&#10;{your_name}"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-y font-mono leading-relaxed"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions row -->
+        <div class="flex gap-3 mt-5">
+          <button onclick="saveEmailSettings()" id="save-email-btn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-2.5 rounded-lg transition-colors text-sm">
+            Save Settings
+          </button>
+          <button onclick="previewEmailNow()" id="preview-email-btn"
+            class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-5 py-2.5 rounded-lg transition-colors text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            Preview a Real Email
+          </button>
+        </div>
+
+        <!-- Preview panel -->
+        <div id="email-preview-panel" class="hidden mt-5 bg-slate-900/60 border border-slate-700/50 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-slate-700/50 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-300">Live Preview</p>
+              <p id="preview-business-label" class="text-xs text-slate-500 mt-0.5"></p>
+            </div>
+            <button onclick="document.getElementById('email-preview-panel').classList.add('hidden')"
+              class="text-slate-500 hover:text-slate-300 transition-colors text-xs">Close</button>
+          </div>
+          <div class="p-4 space-y-3">
+            <div>
+              <span class="text-xs text-slate-500">Subject: </span>
+              <span id="preview-subject-out" class="text-sm text-slate-200 font-medium"></span>
+            </div>
+            <div class="border-t border-slate-700/50 pt-3">
+              <pre id="preview-body-out" class="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap font-sans"></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- CAMPAIGNS PAGE                                                     -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-campaigns" class="p-6 hidden">
+
+      <!-- List view -->
+      <div id="camp-list-view">
+        <div class="flex items-center justify-between mb-5">
+          <div>
+            <h2 class="text-lg font-semibold">Campaigns</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Each campaign targets a specific city, niche, and service. Only one runs at a time.</p>
+          </div>
+          <button onclick="showCampForm(null)"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            New Campaign
+          </button>
+        </div>
+
+        <!-- Pipeline notice banner (campaigns page copy) -->
+        <div id="pipeline-notice-camp" class="hidden items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-4">
+          <svg class="w-4 h-4 text-amber-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+          <div class="flex-1 min-w-0">
+            <p id="pipeline-notice-camp-name" class="text-xs font-semibold text-amber-300 mb-0.5"></p>
+            <p id="pipeline-notice-camp-msg" class="text-xs text-amber-200/80"></p>
+          </div>
+          <button onclick="dismissNotice()" class="text-amber-400/60 hover:text-amber-300 transition-colors shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Campaign grid -->
+        <div id="camp-grid" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div class="col-span-full text-center text-slate-500 text-sm py-12">Loading campaigns...</div>
+        </div>
+      </div>
+
+      <!-- Create / Edit form view — 3-step wizard -->
+      <div id="camp-form-view" class="hidden max-w-xl">
+
+        <!-- Header -->
+        <div class="flex items-center gap-3 mb-5">
+          <button onclick="hideCampForm()" class="text-slate-400 hover:text-white transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          </button>
+          <div>
+            <h2 id="camp-form-title" class="text-lg font-semibold">New Campaign</h2>
+            <p class="text-xs text-slate-400 mt-0.5">Fill in a few details — takes about 30 seconds.</p>
+          </div>
+        </div>
+
+        <!-- Step progress bar -->
+        <div class="flex items-center gap-2 mb-6">
+          <div class="cf-step-dot flex items-center gap-2" data-step="1">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-indigo-600 text-white cf-dot-circle">1</div>
+            <span class="text-xs font-medium text-slate-300">Location</span>
+          </div>
+          <div class="h-px flex-1 bg-slate-700 cf-step-line" id="cf-line-1"></div>
+          <div class="cf-step-dot flex items-center gap-2" data-step="2">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-slate-700 text-slate-400 cf-dot-circle">2</div>
+            <span class="text-xs font-medium text-slate-500 cf-step-label">Audience</span>
+          </div>
+          <div class="h-px flex-1 bg-slate-700 cf-step-line" id="cf-line-2"></div>
+          <div class="cf-step-dot flex items-center gap-2" data-step="3">
+            <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-slate-700 text-slate-400 cf-dot-circle">3</div>
+            <span class="text-xs font-medium text-slate-500 cf-step-label">Offer</span>
+          </div>
+        </div>
+
+        <!-- ── STEP 1: Location ── -->
+        <div id="cf-step-1" class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Step 1 — Where are your leads?</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Country</label>
+              <input id="cf-country" type="text" placeholder="e.g. USA" oninput="cfOnCountry()"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">City / Region</label>
+              <input id="cf-city" type="text" placeholder="e.g. Miami" oninput="cfOnCity()"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+
+          <!-- Target areas — revealed after city is filled -->
+          <div id="cf-areas-section" class="hidden space-y-2 transition-all">
+            <div class="flex items-center justify-between">
+              <label class="block text-xs text-slate-400">Target Areas <span class="text-slate-500 font-normal">— one per line</span></label>
+              <button id="cf-gen-btn" onclick="cfGenerateAreas()"
+                class="flex items-center gap-1.5 text-xs px-3 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 border border-indigo-500/30 transition-colors">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+                Generate Areas
+              </button>
+            </div>
+            <textarea id="cf-localities" rows="6"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-indigo-500 resize-y font-mono"
+              placeholder="Miami Beach&#10;Coral Gables&#10;Brickell&#10;Wynwood&#10;..."></textarea>
+            <p class="text-xs text-slate-500">The tool searches Google Maps in each area you list.</p>
+          </div>
+
+          <div class="flex justify-end pt-1">
+            <button onclick="cfGoStep(2)"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+              Next: Audience &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: Audience ── -->
+        <div id="cf-step-2" class="hidden bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Step 2 — Who are you targeting?</p>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Business Type <span class="text-slate-500">(singular)</span></label>
+              <input id="cf-niche" type="text" placeholder="e.g. plumber" oninput="cfAutoPlural()"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Business Type <span class="text-slate-500">(plural)</span></label>
+              <input id="cf-niche-plural" type="text" placeholder="e.g. plumbers" oninput="this.dataset.auto=''"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">Industry</label>
+            <input id="cf-industry" type="text" placeholder="e.g. home services"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+          </div>
+
+          <div class="flex justify-between pt-1">
+            <button onclick="cfGoStep(1)"
+              class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-lg transition-colors">
+              &larr; Back
+            </button>
+            <button onclick="cfGoStep(3)"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+              Next: Offer &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Offer ── -->
+        <div id="cf-step-3" class="hidden bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold">Step 3 — What are you selling?</p>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">Your service</label>
+            <input id="cf-service" type="text" placeholder="e.g. website design"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">Main benefit for the client</label>
+            <input id="cf-benefit" type="text" placeholder="e.g. get more leads online"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+          </div>
+
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">Pain point they have</label>
+            <input id="cf-pain" type="text" placeholder="e.g. no online presence"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+          </div>
+
+          <div class="flex justify-between pt-1">
+            <button onclick="cfGoStep(2)"
+              class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-sm px-4 py-2 rounded-lg transition-colors">
+              &larr; Back
+            </button>
+            <button id="cf-save-btn" onclick="saveCampaignForm()"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
+              Save Campaign
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- MY LEADS PAGE                                                      -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-leads" class="p-6 hidden">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-semibold">My Leads</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Leads grouped by campaign — click a campaign to view its leads</p>
+        </div>
+        <button onclick="loadLeadsPage()"
+          class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">
+          Refresh
+        </button>
+      </div>
+
+      <div id="leads-camps-list" class="space-y-3">
+        <div class="text-center text-slate-500 text-sm py-12">Loading campaigns...</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- INBOX PAGE                                                         -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-inbox" class="p-6 hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h2 class="text-lg font-semibold">Inbox</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Track replies, opens, and send emails to your leads</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="syncInbox(this)"
+            class="text-xs px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sync Inbox
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="grid grid-cols-4 gap-3 mb-5">
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-center">
+          <p class="text-xl font-bold text-white" id="ib-stat-unread">—</p>
+          <p class="text-xs text-slate-400 mt-0.5">Unread</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-center">
+          <p class="text-xl font-bold text-emerald-400" id="ib-stat-replies">—</p>
+          <p class="text-xs text-slate-400 mt-0.5">Replies</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-center">
+          <p class="text-xl font-bold text-blue-400" id="ib-stat-opened">—</p>
+          <p class="text-xs text-slate-400 mt-0.5">Opens</p>
+        </div>
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 text-center">
+          <p class="text-xl font-bold text-indigo-400" id="ib-stat-sent">—</p>
+          <p class="text-xs text-slate-400 mt-0.5">Sent</p>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div class="flex gap-1 mb-4 border-b border-slate-700/60 pb-0">
+        <button id="ibtab-inbox" onclick="setInboxTab('inbox')"
+          class="text-xs px-4 py-2.5 font-medium border-b-2 border-indigo-500 text-indigo-400 -mb-px transition-colors">Inbox</button>
+        <button id="ibtab-sent" onclick="setInboxTab('sent')"
+          class="text-xs px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition-colors">Sent</button>
+        <button id="ibtab-compose" onclick="setInboxTab('compose')"
+          class="text-xs px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition-colors">Compose</button>
+      </div>
+
+      <!-- Inbox tab -->
+      <div id="ibc-inbox">
+        <div id="inbox-list" class="space-y-2">
+          <div class="text-center text-slate-500 text-sm py-12">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Sent tab -->
+      <div id="ibc-sent" class="hidden">
+        <div id="sent-list" class="space-y-2">
+          <div class="text-center text-slate-500 text-sm py-12">Loading…</div>
+        </div>
+      </div>
+
+      <!-- Compose tab -->
+      <div id="ibc-compose" class="hidden">
+        <div class="max-w-2xl bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <h3 class="text-sm font-semibold text-white">New Email</h3>
+          <div class="space-y-3">
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">To</label>
+              <input id="compose-to" type="email" placeholder="recipient@example.com"
+                class="w-full text-sm bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Subject</label>
+              <input id="compose-subject" type="text" placeholder="Subject"
+                class="w-full text-sm bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-slate-400 mb-1 block">Message</label>
+              <textarea id="compose-body" rows="10" placeholder="Write your message here…"
+                class="w-full text-sm bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+            </div>
+          </div>
+          <div class="flex items-center justify-between pt-1">
+            <p class="text-xs text-slate-500">Email will be sent from your configured SMTP account</p>
+            <button onclick="sendCompose(this)"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors">
+              Send Email
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- LIVE LOGS PAGE                                                     -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-logs" class="p-6 hidden">
+      <!-- Current status banner -->
+      <div id="log-status-bar" class="hidden mb-4 bg-indigo-900/30 border border-indigo-500/25 rounded-xl px-4 py-3 flex items-center gap-3">
+        <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse shrink-0"></div>
+        <div class="flex-1 min-w-0">
+          <span class="text-sm text-indigo-200 font-medium" id="log-step-label">Running...</span>
+          <p id="log-last-action" class="text-xs text-indigo-300/70 mt-0.5 truncate"></p>
+        </div>
+        <button onclick="stopPipeline()"
+          class="shrink-0 text-xs font-medium bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5">
+          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+          Stop
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-semibold">Live Activity</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Plain-English updates of what the tool is doing right now</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="flex rounded-lg overflow-hidden border border-slate-700 text-xs">
+            <button id="filter-important" onclick="setLogFilter('important')"
+              class="px-3 py-1.5 bg-indigo-600 text-white transition-colors">Important</button>
+            <button id="filter-all-logs" onclick="setLogFilter('all')"
+              class="px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors">All</button>
+          </div>
+          <button onclick="clearActivityFeed()" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors">
+            Clear
+          </button>
+        </div>
+      </div>
+
+      <div id="activity-feed"
+        class="bg-slate-900/60 border border-slate-700/60 rounded-xl overflow-y-auto divide-y divide-slate-800/80"
+        style="height: calc(100vh - 260px);">
+        <div id="activity-empty" class="px-5 py-12 text-center text-slate-500 text-sm">
+          <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2z"/></svg>
+          </div>
+          Waiting for activity — run a pipeline step to see what's happening here
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- SETTINGS PAGE                                                      -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <div id="page-settings" class="p-6 hidden">
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold">Settings</h2>
+        <p class="text-xs text-slate-400 mt-0.5">Configure your email account and sending preferences</p>
+      </div>
+
+      <div class="max-w-2xl space-y-5">
+
+        <!-- Sender identity -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-semibold text-white">Your Identity</h3>
+            <p class="text-xs text-slate-400 mt-0.5">This is how you appear in the emails you send</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Your Name</label>
+              <input id="s-name" type="text" placeholder="e.g. John Smith"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Your Email Address</label>
+              <input id="s-email" type="email" placeholder="you@yourdomain.com"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Outgoing mail (SMTP) -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-semibold text-white">Outgoing Mail Server</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Used to send emails. You can get these details from your email provider.</p>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div class="col-span-2">
+              <label class="block text-xs text-slate-400 mb-1.5">SMTP Host</label>
+              <input id="s-smtp-host" type="text" placeholder="smtp.yourdomain.com"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Port</label>
+              <select id="s-smtp-port"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                <option value="465">465 (SSL)</option>
+                <option value="587">587 (TLS)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">SMTP Username</label>
+            <input id="s-smtp-user" type="text" placeholder="Usually the same as your email address"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">SMTP Password
+              <span class="text-slate-500 font-normal ml-1">— leave blank to keep existing</span>
+            </label>
+            <input id="s-smtp-pass" type="password" placeholder="Enter new password to update"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"
+              autocomplete="new-password"/>
+          </div>
+          <!-- Connection test -->
+          <div class="bg-slate-900/50 rounded-lg px-4 py-3 flex items-center justify-between gap-4">
+            <div id="smtp-status" class="text-xs text-slate-500 italic">Save settings first, then test your connection.</div>
+            <button onclick="testConnection()"
+              class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors shrink-0">
+              Test Connection
+            </button>
+          </div>
+        </div>
+
+        <!-- Incoming mail (IMAP) -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-semibold text-white">Incoming Mail Server</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Used to save a copy of sent emails so they appear in your webmail Sent folder.</p>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1.5">IMAP Host</label>
+            <input id="s-imap-host" type="text" placeholder="imap.yourdomain.com"
+              class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            <p class="text-xs text-slate-500 mt-1.5">Uses port 993 (SSL). Login credentials are the same as your SMTP settings above.</p>
+          </div>
+        </div>
+
+        <!-- Sending limits -->
+        <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-5 space-y-4">
+          <div>
+            <h3 class="text-sm font-semibold text-white">Sending Limits</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Control how many emails are sent and how fast to avoid spam filters.</p>
+          </div>
+          <div class="grid grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Max Per Day</label>
+              <input id="s-max-per-day" type="number" placeholder="1000"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Batch Size</label>
+              <input id="s-batch-size" type="number" placeholder="20"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1.5">Delay Between Sends (sec)</label>
+              <input id="s-delay" type="number" placeholder="30"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Save -->
+        <button onclick="saveSettings()" id="save-settings-btn"
+          class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-colors text-sm">
+          Save Settings
+        </button>
+        <div id="settings-msg" class="hidden text-xs text-center py-2 rounded-lg"></div>
+
+      </div>
+    </div>
+
+  </div><!-- /pages -->
+</main>
+
+<!-- Toast -->
+<div id="toasts" class="fixed bottom-5 right-5 space-y-2 z-50 w-80"></div>
+
+<!-- ── JavaScript ─────────────────────────────────────────────────────────── -->
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let currentPage     = 'dashboard';
+let currentFilter   = 'all';
+let leadsOffset     = 0;
+let leadsTotal      = 0;
+let campaignOpen    = false;
+let editMode        = false;
+let logsSSE         = null;
+let logAutoScroll   = true;
+let _cfg            = {};
+const LIMIT         = 75;
+
+// ── API helper ───────────────────────────────────────────────────────────────
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(path, opts);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({ detail: r.statusText }));
+    throw new Error(err.detail || r.statusText);
+  }
+  return r.json();
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+function navigate(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('page-' + page).classList.remove('hidden');
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+  currentPage = page;
+  if (page === 'dashboard')  { loadStats(); loadCampaignData(); }
+  if (page === 'campaigns')  loadCampaigns();
+  if (page === 'emails')     loadEmailSettings();
+  if (page === 'leads')      loadLeadsPage();
+  if (page === 'inbox')      loadInboxPage();
+  if (page === 'settings')   loadSettings();
+  if (page === 'logs')       document.getElementById('log-badge').classList.add('hidden');
+}
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const s = await api('/api/stats');
+    set('stat-total', s.total_agencies ?? s.total ?? '—');
+    set('stat-high',  s.high_priority ?? '—');
+    set('stat-emails', s.with_email ?? '—');
+    set('stat-sent',  s.emails_sent ?? '—');
+  } catch(e) {}
+}
+
+// ── Campaign card ─────────────────────────────────────────────────────────────
+async function loadCampaignData() {
+  try {
+    _cfg = await api('/api/config');
+    const t = _cfg.target || {};
+    const e = _cfg.email  || {};
+
+    const title = `${cap(t.niche_plural || 'businesses')} — ${t.city || 'No location set'}`;
+    set('camp-title', title);
+    const areas = (t.localities || []).length;
+    set('camp-subtitle', `${areas} target area${areas !== 1 ? 's' : ''} · ${cap(t.your_service || 'service not set')} · ${e.your_email || 'email not configured'}`);
+
+    // View mode values
+    set('v-city', t.city || '—');
+    set('v-country', t.country || '—');
+    set('v-localities-count', `${areas} area${areas !== 1 ? 's' : ''}`);
+    document.getElementById('v-localities').textContent = (t.localities || []).join(', ');
+    set('v-niche', cap(t.niche_plural || '—'));
+    set('v-industry', cap(t.industry || '—'));
+    set('v-service', cap(t.your_service || '—'));
+    set('v-benefit', cap(t.your_service_benefit || '—'));
+    set('v-pain', cap(t.pain_point || '—'));
+
+    // Email preview
+    const svc   = t.your_service || '[your service]';
+    const niche = t.niche_plural || 'businesses';
+    const city  = t.city || 'your city';
+    const pain  = t.pain_point || 'limited online presence';
+    const name  = e.your_name || 'Your Name';
+    set('prev-subject', `Quick question about [Business Name]'s ${svc}`);
+    document.getElementById('prev-body').textContent =
+`Hi [Owner Name],
+
+I came across [Business Name] while looking at ${niche} in ${city}.
+
+I noticed [specific issue from their website] — which is something I help fix regularly. ${cap(pain)} is one of the biggest issues for ${niche} trying to grow online.
+
+I help ${niche} like yours with ${svc}, and the results are usually pretty immediate.
+
+Would it be worth a quick 15-minute call this week to see if it's a fit?
+
+Best,
+${name}`;
+  } catch(e) {
+    set('camp-title', 'No campaign configured');
+    set('camp-subtitle', 'Go to Settings to set up your email account, then edit your campaign above');
+  }
+}
+
+function toggleCampaign() {
+  campaignOpen = !campaignOpen;
+  const details  = document.getElementById('campaign-details');
+  const chevron  = document.getElementById('camp-chevron');
+  if (campaignOpen) {
+    details.classList.remove('closed');
+    details.classList.add('open');
+    chevron.style.transform = 'rotate(180deg)';
+  } else {
+    details.classList.remove('open');
+    details.classList.add('closed');
+    chevron.style.transform = 'rotate(0deg)';
+    if (editMode) toggleEditMode(); // close edit if open
+  }
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const viewEl = document.getElementById('details-view');
+  const editEl = document.getElementById('details-edit');
+  const editBtn = document.getElementById('edit-btn');
+
+  if (editMode) {
+    viewEl.classList.add('hidden');
+    editEl.classList.remove('hidden');
+    editBtn.textContent = 'Cancel';
+    // Populate edit fields
+    const t = (_cfg.target || {});
+    document.getElementById('e-city').value         = t.city || '';
+    document.getElementById('e-country').value      = t.country || '';
+    document.getElementById('e-niche').value        = t.niche || '';
+    document.getElementById('e-niche-plural').value = t.niche_plural || '';
+    document.getElementById('e-industry').value     = t.industry || '';
+    document.getElementById('e-service').value      = t.your_service || '';
+    document.getElementById('e-benefit').value      = t.your_service_benefit || '';
+    document.getElementById('e-pain').value         = t.pain_point || '';
+    document.getElementById('e-localities').value   = (t.localities || []).join('\n');
+  } else {
+    viewEl.classList.remove('hidden');
+    editEl.classList.add('hidden');
+    editBtn.textContent = 'Edit Campaign';
+  }
+}
+
+async function saveCampaign() {
+  const localities = document.getElementById('e-localities').value
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  try {
+    await api('/api/config/target', 'POST', {
+      city:                 val('e-city'),
+      country:              val('e-country'),
+      state:                '',
+      localities,
+      niche:                val('e-niche'),
+      niche_plural:         val('e-niche-plural'),
+      industry:             val('e-industry'),
+      your_service:         val('e-service'),
+      your_service_benefit: val('e-benefit'),
+      pain_point:           val('e-pain'),
+    });
+    toast('Campaign saved!', 'success');
+    editMode = false;
+    document.getElementById('details-view').classList.remove('hidden');
+    document.getElementById('details-edit').classList.add('hidden');
+    document.getElementById('edit-btn').textContent = 'Edit Campaign';
+    await loadCampaignData();
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+// ── Settings page ─────────────────────────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const cfg = await api('/api/config');
+    const e = cfg.email || {};
+    document.getElementById('s-name').value      = e.your_name || '';
+    document.getElementById('s-email').value     = e.your_email || '';
+    document.getElementById('s-smtp-host').value = e.smtp_host || '';
+    document.getElementById('s-smtp-port').value = e.smtp_port || 465;
+    document.getElementById('s-smtp-user').value = e.smtp_user || '';
+    document.getElementById('s-imap-host').value = e.imap_host || '';
+    document.getElementById('s-max-per-day').value = e.max_per_day || 1000;
+    document.getElementById('s-batch-size').value  = e.batch_size || 20;
+    document.getElementById('s-delay').value       = e.delay_between_sends || 30;
+    // Never pre-fill password
+  } catch(e) {
+    toast('Failed to load settings', 'error');
+  }
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('save-settings-btn');
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+  try {
+    const smtpPass = document.getElementById('s-smtp-pass').value;
+    const payload = {
+      your_name:           val('s-name'),
+      your_email:          val('s-email'),
+      smtp_host:           val('s-smtp-host'),
+      smtp_port:           parseInt(val('s-smtp-port')) || 465,
+      smtp_user:           val('s-smtp-user'),
+      imap_host:           val('s-imap-host'),
+      max_per_day:         parseInt(val('s-max-per-day')) || 1000,
+      batch_size:          parseInt(val('s-batch-size')) || 20,
+      delay_between_sends: parseInt(val('s-delay')) || 30,
+    };
+    if (smtpPass) payload.smtp_password = smtpPass;
+    await api('/api/config/email', 'POST', payload);
+    toast('Settings saved!', 'success');
+    document.getElementById('s-smtp-pass').value = '';
+    document.getElementById('smtp-status').textContent = 'Settings saved. Click Test Connection to verify.';
+    document.getElementById('smtp-status').className = 'text-xs text-slate-400';
+    loadCampaignData();
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Save Settings';
+    btn.disabled = false;
+  }
+}
+
+async function testConnection() {
+  const el = document.getElementById('smtp-status');
+  el.textContent = 'Testing connection...';
+  el.className = 'text-xs text-slate-400 italic';
+  try {
+    const r = await api('/api/email/check');
+    if (r.ok) {
+      el.textContent = `Connected — sending as ${r.authenticated_as} via ${r.host}:${r.port}`;
+      el.className = 'text-xs text-emerald-400 font-medium';
+    } else {
+      el.textContent = r.message || r.error || 'Connection failed';
+      el.className = 'text-xs text-red-400 font-medium';
+    }
+  } catch(e) {
+    el.textContent = 'Test failed: ' + e.message;
+    el.className = 'text-xs text-red-400';
+  }
+}
+
+// ── Pipeline ──────────────────────────────────────────────────────────────────
+async function runStep(step) {
+  const status = await api('/api/pipeline/status');
+  if (status.running) { toast('Already running: ' + status.step, 'warn'); return; }
+  let body = {};
+  if (step === 'scrape')       body = { max_results: parseInt(val('scrape-max')) || 20 };
+  if (step === 'find-emails')  body = { priority: val('email-priority') };
+  if (step === 'send-emails')  body = { batch_size: parseInt(val('send-batch')) || 20 };
+  try {
+    await api('/api/pipeline/' + step, 'POST', body);
+    toast('Started: ' + stepLabel(step), 'success');
+    navigate('logs');
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function runFull() {
+  const status = await api('/api/pipeline/status');
+  if (status.running) { toast('Already running', 'warn'); return; }
+  try {
+    await api('/api/pipeline/full', 'POST', { max_results: parseInt(val('full-max')) || 20 });
+    toast('Full pipeline started!', 'success');
+    navigate('logs');
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+function stepLabel(s) {
+  const m = { scrape:'Find Businesses', analyze:'Check Websites', 'find-emails':'Find Emails', 'generate-emails':'Write Emails', 'send-emails':'Send Emails' };
+  return m[s] || s;
+}
+
+// ── Pipeline status poll ──────────────────────────────────────────────────────
+let _noticeDismissed = false; // cleared whenever a new notice arrives
+
+function _showNotice(campName, msg) {
+  const label = campName ? `Campaign: ${campName}` : 'Pipeline stopped';
+  // Dashboard banner
+  const dashBanner = document.getElementById('pipeline-notice-dash');
+  if (dashBanner) {
+    document.getElementById('pipeline-notice-dash-name').textContent = label;
+    document.getElementById('pipeline-notice-dash-msg').textContent  = msg;
+    dashBanner.classList.remove('hidden');
+    dashBanner.classList.add('flex');
+  }
+  // Campaigns page banner
+  const campBanner = document.getElementById('pipeline-notice-camp');
+  if (campBanner) {
+    document.getElementById('pipeline-notice-camp-name').textContent = label;
+    document.getElementById('pipeline-notice-camp-msg').textContent  = msg;
+    campBanner.classList.remove('hidden');
+    campBanner.classList.add('flex');
+  }
+}
+
+function _hideNotice() {
+  ['pipeline-notice-dash', 'pipeline-notice-camp'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+  });
+}
+
+function dismissNotice() {
+  _noticeDismissed = true;
+  _hideNotice();
+}
+
+let _lastNoticeMsg = '';
+
+async function pollStatus() {
+  try {
+    const s = await api('/api/pipeline/status');
+    const dot     = document.getElementById('status-dot');
+    const txt     = document.getElementById('status-text');
+    const step    = document.getElementById('status-step');
+    const pill    = document.getElementById('camp-status-pill');
+    const stopBtn = document.getElementById('stop-btn');
+    const awDot   = document.getElementById('aw-dot');
+    const awTitle = document.getElementById('aw-title');
+    const logBar  = document.getElementById('log-status-bar');
+
+    // Show/update pipeline notice banner
+    if (s.notice && s.notice !== _lastNoticeMsg) {
+      _lastNoticeMsg = s.notice;
+      _noticeDismissed = false;
+    }
+    if (s.notice && !_noticeDismissed) {
+      _showNotice(s.notice_campaign || '', s.notice);
+    } else if (!s.notice) {
+      _lastNoticeMsg = '';
+      _hideNotice();
+    }
+
+    if (s.running) {
+      dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0';
+      txt.textContent = 'Running'; txt.className = 'text-amber-400 font-medium flex-1';
+      step.textContent = s.step; step.classList.remove('hidden');
+      pill.classList.remove('hidden');
+      if (stopBtn) stopBtn.classList.remove('hidden');
+      if (awDot)   awDot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse shrink-0';
+      if (awTitle) awTitle.textContent = s.step || 'Running...';
+      if (logBar)  logBar.classList.remove('hidden');
+      // Show running status + stop button in all open pipeline panels
+      _updatePanelStatus('running', s.step);
+    } else if (s.error) {
+      dot.className = 'w-2 h-2 rounded-full bg-red-400 shrink-0';
+      txt.textContent = 'Error'; txt.className = 'text-red-400 font-medium flex-1';
+      step.textContent = s.error; step.classList.remove('hidden');
+      pill.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.add('hidden');
+      if (awDot)   awDot.className = 'w-2 h-2 rounded-full bg-red-400 shrink-0';
+      if (awTitle) awTitle.textContent = 'Something went wrong';
+      if (logBar)  logBar.classList.add('hidden');
+      // Show error in all open pipeline panels
+      _updatePanelStatus('error', s.error);
+    } else {
+      dot.className = 'w-2 h-2 rounded-full bg-emerald-400 shrink-0';
+      txt.textContent = 'Idle'; txt.className = 'text-slate-400 font-medium flex-1';
+      step.classList.add('hidden');
+      pill.classList.add('hidden');
+      if (stopBtn) stopBtn.classList.add('hidden');
+      if (awDot)   awDot.className = 'w-2 h-2 rounded-full bg-slate-500 shrink-0';
+      if (awTitle && !_activityItems.length) awTitle.textContent = 'Pipeline is idle';
+      if (logBar)  logBar.classList.add('hidden');
+      _updatePanelStatus('idle', '');
+    }
+  } catch {}
+}
+
+function _updatePanelStatus(state, message) {
+  document.querySelectorAll('.camp-pipeline-status').forEach(el => {
+    if (state === 'running') {
+      el.className = 'camp-pipeline-status text-xs rounded-lg px-3 py-2 flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-300';
+      el.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"></span> Running: ${esc(message)}`;
+    } else if (state === 'error') {
+      el.className = 'camp-pipeline-status text-xs rounded-lg px-3 py-2 flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-300';
+      el.innerHTML = `<svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> ${esc(message)}`;
+    } else {
+      el.className = 'camp-pipeline-status hidden text-xs rounded-lg px-3 py-2 flex items-center gap-2';
+      el.innerHTML = '';
+    }
+  });
+  document.querySelectorAll('.camp-stop-btn').forEach(btn => {
+    btn.classList.toggle('hidden', state !== 'running');
+  });
+}
+
+async function stopPipeline() {
+  try {
+    const r = await api('/api/pipeline/stop', 'POST');
+    if (r.ok) {
+      toast('Pipeline stopped', 'warn');
+    } else {
+      toast(r.message || 'Nothing is running', 'info');
+    }
+  } catch(e) {
+    toast('Stop failed: ' + e.message, 'error');
+  }
+}
+
+// ── Leads (per-campaign grouped view) ────────────────────────────────────────
+const _clState = {}; // { [campId]: { filter, offset, total } }
+
+async function loadLeadsPage() {
+  const list = document.getElementById('leads-camps-list');
+  list.innerHTML = '<div class="text-center text-slate-500 text-sm py-12">Loading...</div>';
+  try {
+    const camps = await api('/api/campaigns');
+    if (!camps.length) {
+      list.innerHTML = `
+        <div class="text-center text-slate-500 text-sm py-16">
+          <p>No campaigns yet.</p>
+          <button onclick="navigate('campaigns')" class="mt-3 text-xs text-indigo-400 hover:underline">Create a campaign</button>
+        </div>`;
+      return;
+    }
+    list.innerHTML = camps.map(c => _campLeadsRow(c)).join('');
+    // Auto-expand the active campaign so leads are visible immediately
+    const active = camps.find(c => c.is_active);
+    if (active) toggleCampLeads(active.id);
+  } catch(e) {
+    list.innerHTML = `<div class="text-center text-red-400 text-sm py-8">${esc(e.message)}</div>`;
+  }
+}
+
+function _campLeadsRow(c) {
+  const cfg = c.config || {};
+  const activePill = c.is_active
+    ? `<span class="text-xs px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">Active</span>`
+    : `<span class="text-xs px-1.5 py-0.5 rounded-full bg-slate-700/60 text-slate-500 border border-slate-600/40">Inactive</span>`;
+  return `
+  <div class="border border-slate-700/60 rounded-xl overflow-hidden bg-slate-800/60">
+    <div class="px-5 py-4 flex items-center gap-4 cursor-pointer select-none hover:bg-slate-800/80 transition-colors"
+         onclick="toggleCampLeads(${c.id})">
+      <div class="w-8 h-8 bg-indigo-600/15 border border-indigo-500/25 rounded-lg flex items-center justify-center shrink-0 text-indigo-400">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <span class="text-sm font-semibold text-white">${esc(c.name)}</span>
+          ${activePill}
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">${esc(cfg.city||'—')}, ${esc(cfg.country||'—')} · ${esc(cfg.niche_plural||'—')}</p>
+      </div>
+      <div class="flex items-center gap-5 shrink-0 text-xs">
+        <div class="text-center hidden sm:block">
+          <p class="text-white font-semibold">${c.leads_found || 0}</p>
+          <p class="text-slate-500">Leads</p>
+        </div>
+        <div class="text-center hidden sm:block">
+          <p class="text-white font-semibold">${c.emails_sent || 0}</p>
+          <p class="text-slate-500">Sent</p>
+        </div>
+        <svg id="cl-chevron-${c.id}" class="w-5 h-5 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+    </div>
+
+    <div id="cl-panel-${c.id}" class="hidden border-t border-slate-700/60">
+      <div class="px-4 py-3 flex items-center justify-between gap-3 border-b border-slate-700/40 bg-slate-900/30">
+        <div class="flex gap-1.5">
+          <button id="cl-f-${c.id}-all" onclick="setLeadsFilter(${c.id},'all')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-indigo-600 text-white transition-colors">All</button>
+          <button id="cl-f-${c.id}-high_priority" onclick="setLeadsFilter(${c.id},'high_priority')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Top Leads</button>
+          <button id="cl-f-${c.id}-with_emails" onclick="setLeadsFilter(${c.id},'with_emails')"
+            class="text-xs px-2.5 py-1.5 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-colors">Ready to Contact</button>
+        </div>
+        <span id="cl-count-${c.id}" class="text-xs text-slate-400"></span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-xs text-slate-400 uppercase tracking-wide">
+              <th class="text-left px-4 py-3 font-medium">Business</th>
+              <th class="text-left px-4 py-3 font-medium">Location</th>
+              <th class="text-left px-4 py-3 font-medium">Rating</th>
+              <th class="text-left px-4 py-3 font-medium">Website</th>
+              <th class="text-left px-4 py-3 font-medium">Email</th>
+              <th class="text-left px-4 py-3 font-medium">Priority</th>
+              <th class="text-left px-4 py-3 font-medium">Score</th>
+              <th class="text-left px-4 py-3 font-medium">Contacted</th>
+            </tr>
+          </thead>
+          <tbody id="cl-tbody-${c.id}">
+            <tr><td colspan="8" class="px-4 py-8 text-center text-slate-500 text-xs">Loading leads...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between px-4 py-3 border-t border-slate-700/40">
+        <span id="cl-pag-info-${c.id}" class="text-xs text-slate-400"></span>
+        <div class="flex gap-2">
+          <button id="cl-prev-${c.id}" onclick="changeLeadsPage(${c.id},-1)"
+            class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg disabled:opacity-30 transition-colors">
+            &larr; Prev
+          </button>
+          <button id="cl-next-${c.id}" onclick="changeLeadsPage(${c.id},1)"
+            class="text-xs bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg disabled:opacity-30 transition-colors">
+            Next &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleCampLeads(campId) {
+  const panel   = document.getElementById(`cl-panel-${campId}`);
+  const chevron = document.getElementById(`cl-chevron-${campId}`);
+  const isHidden = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !isHidden);
+  chevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+  if (isHidden) loadCampaignLeads(campId);
+}
+
+async function loadCampaignLeads(campId) {
+  if (!_clState[campId]) _clState[campId] = { filter: 'all', offset: 0, total: 0 };
+  const state = _clState[campId];
+  const tbody = document.getElementById(`cl-tbody-${campId}`);
+  if (!tbody) return;
+  tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500 text-sm">Loading...</td></tr>`;
+  try {
+    const isReadyFilter = state.filter === 'with_emails';
+    const [data, emails] = await Promise.all([
+      api(`/api/campaigns/${campId}/leads?limit=${LIMIT}&offset=${state.offset}&filter=${state.filter}`),
+      isReadyFilter ? api(`/api/campaigns/${campId}/emails`).catch(() => ({})) : Promise.resolve({}),
+    ]);
+    state.total = data.total;
+    set(`cl-count-${campId}`, `${data.total} lead${data.total !== 1 ? 's' : ''}`);
+    const lo = state.offset + 1, hi = Math.min(state.offset + LIMIT, state.total);
+    set(`cl-pag-info-${campId}`, data.total ? `Showing ${lo}–${hi} of ${data.total}` : '');
+    const prev = document.getElementById(`cl-prev-${campId}`);
+    const next = document.getElementById(`cl-next-${campId}`);
+    if (prev) prev.disabled = state.offset === 0;
+    if (next) next.disabled = state.offset + LIMIT >= state.total;
+    if (!data.items.length) {
+      tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-10 text-center text-slate-500 text-sm">No leads for this campaign yet. Run the pipeline to get started.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.items.map(b => _leadsTableRow(b, isReadyFilter ? emails : null)).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-red-400 text-sm">${esc(e.message)}</td></tr>`;
+  }
+}
+
+function setLeadsFilter(campId, filter) {
+  if (!_clState[campId]) _clState[campId] = { filter: 'all', offset: 0, total: 0 };
+  _clState[campId].filter = filter;
+  _clState[campId].offset = 0;
+  ['all','high_priority','with_emails'].forEach(f => {
+    const btn = document.getElementById(`cl-f-${campId}-${f}`);
+    if (!btn) return;
+    const active = f === filter;
+    btn.className = `text-xs px-2.5 py-1.5 rounded-lg transition-colors ${active ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'}`;
+  });
+  loadCampaignLeads(campId);
+}
+
+function changeLeadsPage(campId, dir) {
+  if (!_clState[campId]) _clState[campId] = { filter: 'all', offset: 0, total: 0 };
+  _clState[campId].offset = Math.max(0, _clState[campId].offset + dir * LIMIT);
+  loadCampaignLeads(campId);
+}
+
+function _leadsTableRow(b, emails) {
+  const website = b.Website
+    ? `<a href="${esc(b.Website)}" target="_blank" rel="noopener"
+          class="text-blue-400 hover:underline truncate block max-w-[130px]"
+          title="${esc(b.Website)}">${esc(b.Website.replace(/^https?:\/\//,''))}</a>`
+    : `<span class="text-slate-600">—</span>`;
+  const email = b.Email
+    ? `<span class="text-emerald-400">${esc(b.Email)}</span>`
+    : `<span class="text-slate-600">—</span>`;
+  const sent = (b['Email Sent'] === 'Yes' || b['Email Sent'] === true)
+    ? `<span class="text-xs text-emerald-400 font-medium">&#10003; Yes</span>`
+    : `<span class="text-slate-600">—</span>`;
+  const mainRow = `<tr class="border-t border-slate-700/50">
+    <td class="px-4 py-3"><div class="text-sm font-medium text-white">${esc(b.Name||'')}</div><div class="text-xs text-slate-500">${esc(b.Phone||'')}</div></td>
+    <td class="px-4 py-3 text-xs text-slate-300 whitespace-nowrap">${esc(b.Locality||'')} ${esc(b.City||'')}</td>
+    <td class="px-4 py-3 text-xs whitespace-nowrap">${b.Rating?`<span class="text-amber-400">&#9733; ${b.Rating}</span><span class="text-slate-500 ml-1">(${b.Reviews||0})</span>`:'<span class="text-slate-600">—</span>'}</td>
+    <td class="px-4 py-3 text-xs">${website}</td>
+    <td class="px-4 py-3 text-xs">${email}</td>
+    <td class="px-4 py-3">${priorityBadge(b.Priority)}</td>
+    <td class="px-4 py-3 text-xs text-slate-300">${b['Qualification Score']||'—'}</td>
+    <td class="px-4 py-3 text-xs">${sent}</td>
+  </tr>`;
+  if (!emails) return mainRow;
+  // Ready to Contact view — show generated email preview below the business row
+  const e = emails[b.ID];
+  const alreadySent = b['Email Sent'] === 'Yes' || b['Email Sent'] === true;
+  const sendBtn = alreadySent
+    ? `<span class="text-xs text-emerald-400 font-medium">&#10003; Already sent</span>`
+    : `<button onclick="sendManualEmail('${esc(b.ID)}', this)"
+         class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 py-1.5 rounded-lg transition-colors">
+         Send Now
+       </button>`;
+  const emailPreview = e
+    ? `<div class="space-y-2.5">
+        <div class="flex items-start gap-3">
+          <span class="text-xs text-slate-500 font-medium uppercase tracking-wide w-14 shrink-0 pt-0.5">Subject</span>
+          <span class="text-xs text-slate-200 font-medium">${esc(e['Subject']||'')}</span>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="text-xs text-slate-500 font-medium uppercase tracking-wide w-14 shrink-0 pt-0.5">Body</span>
+          <pre class="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed max-h-44 overflow-y-auto font-sans flex-1 bg-slate-950/60 rounded-lg p-3 border border-slate-700/40">${esc(e['Body']||'')}</pre>
+        </div>
+        <div class="flex items-center justify-end pt-1">${sendBtn}</div>
+      </div>`
+    : `<p class="text-xs text-slate-500 italic">No email generated yet — run the "Write Emails" step first.</p>`;
+  const emailRow = `<tr class="bg-slate-900/50 border-t border-slate-700/30">
+    <td colspan="8" class="px-5 py-3">${emailPreview}</td>
+  </tr>`;
+  return mainRow + emailRow;
+}
+
+async function sendManualEmail(businessId, btn) {
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+  try {
+    await api('/api/businesses/send-manual', 'POST', { business_id: businessId });
+    btn.closest('td').querySelector('div.flex.items-center.justify-end').innerHTML =
+      '<span class="text-xs text-emerald-400 font-medium">&#10003; Sent!</span>';
+    toast('Email sent!', 'success');
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Send Now';
+    toast('Send failed: ' + e.message, 'error');
+  }
+}
+
+function priorityBadge(p) {
+  if (!p) return '<span class="text-slate-600 text-xs">—</span>';
+  const styles = { HIGH:'bg-red-500/15 text-red-400 border border-red-500/25', MEDIUM:'bg-amber-500/15 text-amber-400 border border-amber-500/25', LOW:'bg-slate-600/40 text-slate-400 border border-slate-600/50' };
+  return `<span class="text-xs px-2 py-0.5 rounded-full ${styles[p]||styles.LOW}">${p}</span>`;
+}
+
+// ── Live Logs ─────────────────────────────────────────────────────────────────
+let _activityItems = [];   // {type, text, detail, ts, important}
+let _logFilter     = 'important';
+
+function connectLogs() {
+  if (logsSSE) { try { logsSSE.close(); } catch {} }
+  logsSSE = new EventSource('/api/logs/stream');
+  logsSSE.onmessage = (e) => { const d = JSON.parse(e.data); if (d.msg && !d.ping) appendLog(d.msg); };
+  logsSSE.onerror = () => setTimeout(connectLogs, 3000);
+}
+
+// Translate a raw Python log line into a human-readable activity item
+function parseLog(raw) {
+  const m = raw.toLowerCase();
+
+  // ── Step headers ──────────────────────────────────────────────────────────
+  if (/step\s*1.*(scraping|scrape|google maps)/i.test(raw) || /scraping google maps/i.test(raw))
+    return { type:'step', text:'Step 1 of 4 — Finding businesses on Google Maps', important:true };
+  if (/step\s*2.*(analyz)/i.test(raw) || /analyzing websites/i.test(raw))
+    return { type:'step', text:'Step 2 of 4 — Checking website quality', important:true };
+  if (/step\s*3.*(email|find)/i.test(raw) || /finding emails/i.test(raw))
+    return { type:'step', text:'Step 3 of 4 — Finding contact email addresses', important:true };
+  if (/step\s*4.*(generat)/i.test(raw) || /generating.*email/i.test(raw))
+    return { type:'step', text:'Step 4 of 4 — Writing personalised emails with AI', important:true };
+  if (/sending batch/i.test(raw))
+    return { type:'step', text:'Sending email batch', important:true };
+  if (/starting full pipeline/i.test(raw))
+    return { type:'step', text:'Starting full pipeline — all steps will run automatically', important:true };
+
+  // ── Completion ────────────────────────────────────────────────────────────
+  if (/full pipeline complete/i.test(raw))
+    return { type:'complete', text:'Pipeline finished — all steps completed successfully', important:true };
+  if (/batch complete/i.test(raw)) {
+    const nums = raw.match(/sent:\s*(\d+).*failed:\s*(\d+)/i);
+    if (nums) return { type:'complete', text:`Email batch done — ${nums[1]} sent, ${nums[2]} failed`, important:true };
+    return { type:'complete', text:'Email batch completed', important:true };
+  }
+  if (/step.*complete|finished|done/i.test(raw) && !m.includes('to:'))
+    return { type:'complete', text:clean(raw), important:true };
+
+  // ── Email sent ────────────────────────────────────────────────────────────
+  if (/✅\s*sent|sent!/i.test(raw))
+    return { type:'sent', text:'Email delivered successfully', important:true };
+
+  // ── Email sending (individual) ─────────────────────────────────────────────
+  const batchLine = raw.match(/^\[(\d+)\/(\d+)\]\s*(.+)/);
+  if (batchLine)
+    return { type:'sending', text:`Sending email ${batchLine[1]} of ${batchLine[2]}`, detail:batchLine[3].trim(), important:true };
+
+  // ── Businesses found / searched ───────────────────────────────────────────
+  if (/searching|scraping|looking for/i.test(raw) && /locality|area|map/i.test(raw))
+    return { type:'search', text:'Searching area on Google Maps', detail:clean(raw), important:false };
+  const foundBiz = raw.match(/found[:\s]+(.{3,60})/i);
+  if (foundBiz && !m.includes('email') && !m.includes('error'))
+    return { type:'found', text:`Found: ${foundBiz[1].trim()}`, important:false };
+
+  // ── Email discovery ────────────────────────────────────────────────────────
+  const foundEmail = raw.match(/found email[:\s]+(\S+@\S+)/i);
+  if (foundEmail)
+    return { type:'found', text:`Found email address`, detail:foundEmail[1], important:false };
+  if (/finding email|searching.*email/i.test(raw))
+    return { type:'search', text:'Looking for contact email', detail:clean(raw), important:false };
+
+  // ── Website analysis ───────────────────────────────────────────────────────
+  if (/analyz|checking website/i.test(raw))
+    return { type:'search', text:'Checking website quality', detail:clean(raw), important:false };
+
+  // ── SMTP / connection ──────────────────────────────────────────────────────
+  if (/smtp connected|connected.*smtp/i.test(raw))
+    return { type:'complete', text:'Email account connected successfully', important:true };
+
+  // ── Errors ────────────────────────────────────────────────────────────────
+  if (/error|failed|exception/i.test(raw))
+    return { type:'error', text:clean(raw), important:true };
+
+  // ── Warnings ──────────────────────────────────────────────────────────────
+  if (/warn|skipping duplicate/i.test(raw))
+    return { type:'warn', text:clean(raw), important:true };
+
+  // ── Skip noisy lines ──────────────────────────────────────────────────────
+  if (/^\s*(to:|subject:|waiting|⏳|reply-to|from:)/i.test(raw)) return null;
+
+  return { type:'info', text:clean(raw), important:false };
+}
+
+function clean(s) {
+  // Strip leading symbols/whitespace, truncate long lines
+  return s.replace(/^[\s✅❌⚠️🚀📧🔄]+/, '').trim().slice(0, 120);
+}
+
+// Icon SVGs for each type (inline, no emojis)
+const _actIcons = {
+  step:     `<div class="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>`,
+  complete: `<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>`,
+  sent:     `<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg></div>`,
+  sending:  `<div class="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-blue-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/></svg></div>`,
+  found:    `<div class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>`,
+  search:   `<div class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>`,
+  error:    `<div class="w-6 h-6 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-red-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>`,
+  warn:     `<div class="w-6 h-6 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center shrink-0"><svg class="w-3 h-3 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>`,
+  info:     `<div class="w-6 h-6 rounded-full bg-slate-700 border border-slate-600 flex items-center justify-center shrink-0"><div class="w-1.5 h-1.5 rounded-full bg-slate-500"></div></div>`,
+};
+
+const _actTextCls = { step:'text-indigo-300 font-medium', complete:'text-emerald-300 font-medium', sent:'text-emerald-300', sending:'text-blue-300', found:'text-slate-300', search:'text-slate-400', error:'text-red-300 font-medium', warn:'text-amber-300', info:'text-slate-400' };
+
+function appendLog(raw) {
+  const parsed = parseLog(raw);
+  if (!parsed) return;  // filtered out (noise)
+
+  const item = { ...parsed, ts: new Date().toLocaleTimeString('en-US', { hour12:false, hour:'2-digit', minute:'2-digit' }) };
+  _activityItems.push(item);
+  if (_activityItems.length > 300) _activityItems.shift();
+
+  _renderActivityFeed();
+  _updateActivityWidget(item);
+
+  if (currentPage !== 'logs') document.getElementById('log-badge').classList.remove('hidden');
+}
+
+function _renderActivityFeed() {
+  const feed    = document.getElementById('activity-feed');
+  const empty   = document.getElementById('activity-empty');
+  const visible = _activityItems.filter(i => _logFilter === 'all' || i.important);
+  if (!visible.length) {
+    if (empty) empty.classList.remove('hidden');
+    // Remove any rendered items
+    feed.querySelectorAll('.act-item').forEach(el => el.remove());
+    return;
+  }
+  if (empty) empty.classList.add('hidden');
+
+  // Rebuild (simple: clear and re-render last 200 visible)
+  feed.querySelectorAll('.act-item').forEach(el => el.remove());
+  const slice = visible.slice(-200);
+  const frag  = document.createDocumentFragment();
+  slice.forEach(item => frag.appendChild(_makeActivityEl(item)));
+  feed.appendChild(frag);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function _makeActivityEl(item) {
+  const el = document.createElement('div');
+  el.className = 'act-item flex items-start gap-3 px-4 py-3';
+  const icon    = _actIcons[item.type] || _actIcons.info;
+  const textCls = _actTextCls[item.type] || 'text-slate-400';
+  const detail  = item.detail ? `<p class="text-xs text-slate-500 mt-0.5">${esc(item.detail)}</p>` : '';
+  el.innerHTML  = `
+    ${icon}
+    <div class="flex-1 min-w-0">
+      <p class="text-sm ${textCls}">${esc(item.text)}</p>
+      ${detail}
+    </div>
+    <span class="text-xs text-slate-600 shrink-0 mt-0.5">${item.ts}</span>`;
+  return el;
+}
+
+function _updateActivityWidget(latest) {
+  // Status bar on logs page
+  const bar   = document.getElementById('log-status-bar');
+  const label = document.getElementById('log-step-label');
+  const last  = document.getElementById('log-last-action');
+  if (latest.type === 'step') {
+    if (bar)   bar.classList.remove('hidden');
+    if (label) label.textContent = latest.text;
+    if (last)  last.textContent  = '';
+  } else if (latest.important) {
+    if (last) last.textContent = latest.text;
+  }
+
+  // Dashboard activity widget
+  const awFeed  = document.getElementById('aw-feed');
+  const awTitle = document.getElementById('aw-title');
+  const awDot   = document.getElementById('aw-dot');
+  if (!awFeed) return;
+
+  // Keep last 4 important items for the widget
+  const important = _activityItems.filter(i => i.important).slice(-4);
+  if (!important.length) return;
+
+  awFeed.innerHTML = important.map(item => {
+    const textCls = _actTextCls[item.type] || 'text-slate-400';
+    const detail  = item.detail ? `<span class="text-slate-500"> — ${esc(item.detail)}</span>` : '';
+    return `<div class="flex items-center gap-3 px-4 py-2.5">
+      ${_actIcons[item.type] || _actIcons.info}
+      <p class="flex-1 text-xs ${textCls} min-w-0 truncate">${esc(item.text)}${detail}</p>
+      <span class="text-xs text-slate-600 shrink-0">${item.ts}</span>
+    </div>`;
+  }).join('');
+}
+
+function setLogFilter(f) {
+  _logFilter = f;
+  document.getElementById('filter-important').className = f === 'important'
+    ? 'px-3 py-1.5 bg-indigo-600 text-white transition-colors'
+    : 'px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors';
+  document.getElementById('filter-all-logs').className = f === 'all'
+    ? 'px-3 py-1.5 bg-indigo-600 text-white transition-colors'
+    : 'px-3 py-1.5 bg-slate-800 text-slate-400 hover:bg-slate-700 transition-colors';
+  _renderActivityFeed();
+}
+
+function clearActivityFeed() {
+  _activityItems = [];
+  _renderActivityFeed();
+  document.getElementById('log-status-bar')?.classList.add('hidden');
+  const awFeed = document.getElementById('aw-feed');
+  if (awFeed) awFeed.innerHTML = '<div class="px-4 py-3 text-xs text-slate-500 italic">No recent activity.</div>';
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function initAuth() {
+  try {
+    const r = await fetch('/api/auth/me');
+    if (!r.ok) { window.location.href = '/auth'; return; }
+    const u = await r.json();
+    document.getElementById('user-name').textContent = u.name || u.email;
+    document.getElementById('user-avatar').textContent = (u.name || u.email)[0].toUpperCase();
+  } catch { window.location.href = '/auth'; }
+}
+
+async function logout() {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  window.location.href = '/';
+}
+
+// ── Toasts ────────────────────────────────────────────────────────────────────
+function toast(msg, type = 'info') {
+  const colors = { success:'bg-emerald-900/95 border-emerald-500/40 text-emerald-200', error:'bg-red-900/95 border-red-500/40 text-red-200', warn:'bg-amber-900/95 border-amber-500/40 text-amber-200', info:'bg-slate-800/95 border-slate-600/40 text-slate-200' };
+  const icons  = { success:'&#10003;', error:'&#10007;', warn:'&#9888;', info:'&#8505;' };
+  const el = document.createElement('div');
+  el.className = `${colors[type]} border rounded-xl px-4 py-3 text-sm shadow-2xl flex items-start gap-2.5 backdrop-blur`;
+  el.innerHTML = `<span class="shrink-0 mt-0.5">${icons[type]}</span><span>${esc(msg)}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(() => el.style.opacity = '0', 3500);
+  setTimeout(() => el.remove(), 4000);
+  el.style.transition = 'opacity 0.5s';
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function set(id, v) { const el = document.getElementById(id); if (el) el.textContent = v; }
+function val(id)    { return document.getElementById(id)?.value ?? ''; }
+function cap(s)     { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+// ── Emails page ───────────────────────────────────────────────────────────────
+let _currentEmailMode = 'ai';
+let _currentTone      = 'casual_professional';
+let _tplBodyFocused   = false;
+
+async function loadEmailSettings() {
+  try {
+    const cfg = await api('/api/email/creative');
+    _currentEmailMode = cfg.email_mode || 'ai';
+    _currentTone      = cfg.ai_tone    || 'casual_professional';
+    selectEmailMode(_currentEmailMode, false);
+    selectTone(_currentTone, false);
+    document.getElementById('ai-guidelines').value = cfg.ai_guidelines    || '';
+    document.getElementById('ai-sample').value     = cfg.ai_sample_email  || '';
+    document.getElementById('tpl-subject').value   = cfg.email_template_subject || '';
+    document.getElementById('tpl-body').value      = cfg.email_template_body    || '';
+  } catch(e) {
+    toast('Failed to load email settings', 'error');
+  }
+}
+
+function selectEmailMode(mode, save = false) {
+  _currentEmailMode = mode;
+  const aiBtn  = document.getElementById('mode-ai-btn');
+  const tplBtn = document.getElementById('mode-tpl-btn');
+  const aiPanel  = document.getElementById('email-ai-panel');
+  const tplPanel = document.getElementById('email-tpl-panel');
+
+  if (mode === 'ai') {
+    aiBtn.className  = 'email-mode-btn border-2 border-indigo-500 bg-indigo-500/10 rounded-xl p-4 text-left transition-all';
+    tplBtn.className = 'email-mode-btn border-2 border-slate-700 bg-slate-800/40 rounded-xl p-4 text-left transition-all hover:border-slate-600';
+    aiPanel.classList.remove('hidden');
+    tplPanel.classList.add('hidden');
+  } else {
+    tplBtn.className = 'email-mode-btn border-2 border-indigo-500 bg-indigo-500/10 rounded-xl p-4 text-left transition-all';
+    aiBtn.className  = 'email-mode-btn border-2 border-slate-700 bg-slate-800/40 rounded-xl p-4 text-left transition-all hover:border-slate-600';
+    tplPanel.classList.remove('hidden');
+    aiPanel.classList.add('hidden');
+  }
+}
+
+function selectTone(tone, save = false) {
+  _currentTone = tone;
+  document.querySelectorAll('.tone-btn').forEach(btn => {
+    const isSelected = btn.dataset.tone === tone;
+    btn.className = isSelected
+      ? 'tone-btn text-xs px-3 py-2 rounded-lg border border-indigo-500 bg-indigo-500/15 text-indigo-300 transition-all'
+      : 'tone-btn text-xs px-3 py-2 rounded-lg border border-slate-600 bg-slate-700/50 text-slate-300 hover:border-slate-500 transition-all';
+  });
+}
+
+function insertVar(v) {
+  const ta = document.getElementById('tpl-body');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + v + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + v.length;
+  ta.focus();
+}
+
+async function saveEmailSettings() {
+  const btn = document.getElementById('save-email-btn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  try {
+    await api('/api/email/creative', 'POST', {
+      email_mode:             _currentEmailMode,
+      ai_tone:                _currentTone,
+      ai_guidelines:          val('ai-guidelines'),
+      ai_sample_email:        val('ai-sample'),
+      email_template_subject: val('tpl-subject'),
+      email_template_body:    val('tpl-body'),
+    });
+    toast('Email settings saved!', 'success');
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  } finally {
+    btn.textContent = 'Save Settings'; btn.disabled = false;
+  }
+}
+
+async function previewEmailNow() {
+  const btn  = document.getElementById('preview-email-btn');
+  const panel = document.getElementById('email-preview-panel');
+  btn.textContent = 'Generating...'; btn.disabled = true;
+  panel.classList.add('hidden');
+  try {
+    // Save first so preview uses latest settings
+    await api('/api/email/creative', 'POST', {
+      email_mode:             _currentEmailMode,
+      ai_tone:                _currentTone,
+      ai_guidelines:          val('ai-guidelines'),
+      ai_sample_email:        val('ai-sample'),
+      email_template_subject: val('tpl-subject'),
+      email_template_body:    val('tpl-body'),
+    });
+    const r = await api('/api/email/preview-generated');
+    document.getElementById('preview-subject-out').textContent = r.subject || '(no subject)';
+    document.getElementById('preview-body-out').textContent    = r.body    || '(no body)';
+    document.getElementById('preview-business-label').textContent =
+      r.business_name ? `Generated for: ${r.business_name}` : 'Sample preview';
+    panel.classList.remove('hidden');
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(e) {
+    toast('Preview failed: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Preview a Real Email';
+    btn.disabled = false;
+  }
+}
+
+// ── Campaigns ─────────────────────────────────────────────────────────────────
+let _editingCampId = null;
+
+function toggleCampMenu(campId, e) {
+  e.stopPropagation();
+  const menu = document.getElementById(`camp-menu-${campId}`);
+  const isOpen = !menu.classList.contains('hidden');
+  closeCampMenus();
+  if (!isOpen) menu.classList.remove('hidden');
+}
+
+function closeCampMenus() {
+  document.querySelectorAll('[id^="camp-menu-"]').forEach(m => m.classList.add('hidden'));
+}
+
+// Close any open camp menu when clicking elsewhere
+document.addEventListener('click', closeCampMenus);
+
+async function loadCampaigns() {
+  const grid = document.getElementById('camp-grid');
+  try {
+    const camps = await api('/api/campaigns');
+    // Update sidebar badge
+    const badge = document.getElementById('camp-count-badge');
+    if (camps.length) { badge.textContent = camps.length; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+
+    if (!camps.length) {
+      grid.innerHTML = `
+        <div class="col-span-full flex flex-col items-center justify-center py-16 text-center">
+          <div class="w-14 h-14 bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
+            <svg class="w-7 h-7 text-slate-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 0 1-2.827 0l-4.244-4.243a8 8 0 1 1 11.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+          </div>
+          <p class="text-sm font-medium text-slate-300">No campaigns yet</p>
+          <p class="text-xs text-slate-500 mt-1 mb-4">Create your first campaign to start finding leads</p>
+          <button onclick="showCampForm(null)" class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm px-4 py-2 rounded-lg transition-colors">
+            Create Campaign
+          </button>
+        </div>`;
+      return;
+    }
+
+    // Remember which panels were open before re-render so we can restore them
+    const openIds = new Set(
+      [...grid.querySelectorAll('[data-camp-id]')]
+        .filter(card => !card.querySelector('[data-panel]').classList.contains('hidden'))
+        .map(card => card.getAttribute('data-camp-id'))
+    );
+
+    grid.innerHTML = camps.map(c => campCard(c)).join('');
+
+    // Restore previously open panels
+    grid.querySelectorAll('[data-camp-id]').forEach(card => {
+      if (openIds.has(card.getAttribute('data-camp-id'))) {
+        const panel   = card.querySelector('[data-panel]');
+        const chevron = card.querySelector('[data-chevron]');
+        panel.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+      }
+    });
+  } catch(e) {
+    grid.innerHTML = `<div class="col-span-full text-red-400 text-sm text-center py-8">${esc(e.message)}</div>`;
+  }
+}
+
+function campCard(c) {
+  const activeBorder = c.is_active
+    ? 'border-indigo-500/50 bg-indigo-950/20'
+    : 'border-slate-700/60 bg-slate-800/60';
+  const activePill = c.is_active
+    ? `<span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 font-medium">Active</span>`
+    : `<span class="text-xs px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-400 border border-slate-600/40">Inactive</span>`;
+  const cfg = c.config || {};
+  const areas = (cfg.localities || []).length;
+  const createdDate = c.created_at ? c.created_at.split('T')[0].split(' ')[0] : '';
+
+  const inactiveWarning = !c.is_active ? `
+    <div class="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2 mb-3">
+      <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <p class="text-xs text-amber-300">Campaign is not active. <button onclick="activateCamp(${c.id})" class="underline font-medium hover:text-amber-200">Activate it</button> before running the pipeline.</p>
+    </div>` : '';
+
+  return `
+    <div class="border rounded-xl overflow-hidden ${activeBorder} transition-colors" data-camp-id="${c.id}">
+      <div class="p-4 space-y-3">
+        <div class="flex items-start justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="text-sm font-semibold text-white truncate">${esc(c.name)}</h3>
+              ${activePill}
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">${esc(cfg.city||'—')}, ${esc(cfg.country||'—')} · ${areas} area${areas!==1?'s':''}</p>
+          </div>
+          <!-- Three-dot menu -->
+          <div class="relative shrink-0" id="camp-menu-wrap-${c.id}">
+            <button onclick="toggleCampMenu(${c.id}, event)"
+              class="w-7 h-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-700/60 transition-colors">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+            </button>
+            <div id="camp-menu-${c.id}"
+              class="hidden absolute right-0 top-8 z-50 w-36 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
+              <button onclick="showCampForm(${c.id}); closeCampMenus()"
+                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit Campaign
+              </button>
+              ${!c.is_active ? `
+              <button onclick="deleteCamp(${c.id}, '${esc(c.name)}'); closeCampMenus()"
+                class="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs text-red-400 hover:bg-red-900/30 hover:text-red-300 transition-colors border-t border-slate-700">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+                Delete
+              </button>` : `
+              <div class="px-3 py-2.5 text-xs text-slate-600 border-t border-slate-700 cursor-not-allowed">
+                Delete (deactivate first)
+              </div>`}
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-slate-900/50 rounded-lg px-3 py-2">
+            <p class="text-slate-500">Businesses found</p>
+            <p class="text-white font-semibold mt-0.5">${c.leads_found || 0}</p>
+          </div>
+          <div class="bg-slate-900/50 rounded-lg px-3 py-2">
+            <p class="text-slate-500">Emails sent</p>
+            <p class="text-white font-semibold mt-0.5">${c.emails_sent || 0}</p>
+          </div>
+        </div>
+
+        <div class="text-xs text-slate-500 space-y-1">
+          <div class="flex gap-1"><span class="text-slate-600">Service:</span> <span class="text-slate-300 truncate">${esc(cfg.your_service||'—')}</span></div>
+          <div class="flex gap-1"><span class="text-slate-600">Niche:</span> <span class="text-slate-300 truncate">${esc(cfg.niche_plural||'—')}</span></div>
+          ${createdDate ? `<div class="text-slate-600">Created ${createdDate}</div>` : ''}
+        </div>
+
+        <div class="flex gap-2 pt-1">
+          ${!c.is_active ? `
+            <button onclick="activateCamp(${c.id})"
+              class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium py-1.5 rounded-lg transition-colors">
+              Set Active
+            </button>` : `
+            <div class="flex-1 text-center text-xs text-indigo-400 py-1.5 border border-indigo-500/20 rounded-lg bg-indigo-500/5">
+              Currently Active
+            </div>`}
+        </div>
+
+        <!-- Pipeline toggle button -->
+        <button onclick="toggleCampPipeline(this)"
+          class="w-full flex items-center justify-between text-xs text-slate-400 hover:text-slate-200 py-2 px-3 rounded-lg border border-slate-700/50 hover:border-slate-600 bg-slate-900/30 hover:bg-slate-800/50 transition-all">
+          <span class="flex items-center gap-2 font-medium">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Run Pipeline
+          </span>
+          <svg data-chevron class="w-3.5 h-3.5 transition-transform duration-200" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+
+      <!-- Pipeline panel (collapsible) -->
+      <div data-panel class="hidden border-t border-slate-700/60 bg-slate-900/50 p-4 space-y-2">
+        ${inactiveWarning}
+
+        <!-- Inline pipeline status / error banner -->
+        <div class="camp-pipeline-status hidden text-xs rounded-lg px-3 py-2 flex items-center gap-2"></div>
+
+        <!-- Run All header -->
+        <div class="flex items-center justify-between pb-1">
+          <span class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Steps</span>
+          <div class="flex items-center gap-2">
+            <button onclick="stopPipeline()"
+              class="camp-stop-btn hidden text-xs font-medium text-red-400 hover:text-red-300 border border-red-500/30 hover:bg-red-500/10 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>
+              Stop
+            </button>
+            <input type="number" id="cp-full-max-${c.id}" value="20" min="1" max="100"
+              class="w-12 text-xs bg-slate-700 border border-slate-600 rounded px-2 py-1 text-center focus:outline-none focus:border-indigo-500"/>
+            <span class="text-xs text-slate-500">per area</span>
+            <button onclick="runCampFull(${c.id})"
+              class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+              Run All
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 1: Scrape -->
+        <div class="flex items-center gap-3 bg-slate-800/60 rounded-lg px-3 py-2.5">
+          <div class="w-6 h-6 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-blue-400">1</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white">Find Businesses</p>
+            <p class="text-xs text-slate-500">Search Google Maps</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <input type="number" id="cp-scrape-max-${c.id}" value="20" min="1" max="100"
+              class="w-10 text-xs bg-slate-700 border border-slate-600 rounded px-1.5 py-1 text-center focus:outline-none focus:border-indigo-500"/>
+            <button onclick="runCampStep(${c.id}, 'scrape')"
+              class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+              Start
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Analyze -->
+        <div class="flex items-center gap-3 bg-slate-800/60 rounded-lg px-3 py-2.5">
+          <div class="w-6 h-6 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-blue-400">2</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white">Qualify Leads</p>
+            <p class="text-xs text-slate-500">Score website quality</p>
+          </div>
+          <button onclick="runCampStep(${c.id}, 'analyze')"
+            class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors shrink-0 whitespace-nowrap">
+            Start
+          </button>
+        </div>
+
+        <!-- Step 3: Find Emails -->
+        <div class="flex items-center gap-3 bg-slate-800/60 rounded-lg px-3 py-2.5">
+          <div class="w-6 h-6 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-blue-400">3</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white">Find Emails</p>
+            <p class="text-xs text-slate-500">Discover contact addresses</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <select id="cp-email-priority-${c.id}"
+              class="text-xs bg-slate-700 border border-slate-600 rounded px-1.5 py-1 focus:outline-none focus:border-indigo-500">
+              <option value="HIGH">Top leads</option>
+              <option value="ALL">All leads</option>
+            </select>
+            <button onclick="runCampStep(${c.id}, 'find-emails')"
+              class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+              Start
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Generate Emails -->
+        <div class="flex items-center gap-3 bg-slate-800/60 rounded-lg px-3 py-2.5">
+          <div class="w-6 h-6 rounded-full bg-blue-500/15 border border-blue-500/30 flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-blue-400">4</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white">Write Emails</p>
+            <p class="text-xs text-slate-500">AI personalises each email</p>
+          </div>
+          <button onclick="runCampStep(${c.id}, 'generate-emails')"
+            class="bg-blue-600 hover:bg-blue-500 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors shrink-0 whitespace-nowrap">
+            Start
+          </button>
+        </div>
+
+        <!-- Step 5: Send Emails -->
+        <div class="flex items-center gap-3 bg-slate-800/60 border border-emerald-700/20 rounded-lg px-3 py-2.5">
+          <div class="w-6 h-6 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <span class="text-xs font-bold text-emerald-400">5</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-medium text-white">Send Emails</p>
+            <p class="text-xs text-slate-500">Send outreach batch</p>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <input type="number" id="cp-send-batch-${c.id}" value="20" min="1" max="500"
+              class="w-10 text-xs bg-slate-700 border border-slate-600 rounded px-1.5 py-1 text-center focus:outline-none focus:border-indigo-500"/>
+            <button onclick="runCampStep(${c.id}, 'send-emails')"
+              class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+              Send
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>`;
+}
+
+// ── Campaign wizard state ──────────────────────────────────────────────────
+let _cfStep = 1;
+
+function cfGoStep(n) {
+  // Validate before advancing
+  if (n > _cfStep) {
+    if (_cfStep === 1) {
+      if (!val('cf-country').trim()) { toast('Please enter a country first.', 'error'); return; }
+      if (!val('cf-city').trim())    { toast('Please enter a city / region.', 'error'); return; }
+    }
+    if (_cfStep === 2) {
+      if (!val('cf-niche').trim()) { toast('Please enter a business type.', 'error'); return; }
+    }
+  }
+  document.getElementById(`cf-step-${_cfStep}`).classList.add('hidden');
+  _cfStep = n;
+  document.getElementById(`cf-step-${n}`).classList.remove('hidden');
+  _cfUpdateProgress();
+}
+
+function _cfUpdateProgress() {
+  document.querySelectorAll('.cf-step-dot').forEach(dot => {
+    const s = parseInt(dot.dataset.step);
+    const circle = dot.querySelector('.cf-dot-circle');
+    const label  = dot.querySelector('.cf-step-label');
+    if (s < _cfStep) {
+      circle.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-green-600 text-white cf-dot-circle';
+      circle.innerHTML = '&#10003;';
+    } else if (s === _cfStep) {
+      circle.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-indigo-600 text-white cf-dot-circle';
+      circle.textContent = s;
+    } else {
+      circle.className = 'w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold bg-slate-700 text-slate-400 cf-dot-circle';
+      circle.textContent = s;
+    }
+    if (label) label.className = s <= _cfStep ? 'text-xs font-medium text-slate-300 cf-step-label' : 'text-xs font-medium text-slate-500 cf-step-label';
+  });
+  // colour the connector lines
+  const l1 = document.getElementById('cf-line-1');
+  const l2 = document.getElementById('cf-line-2');
+  if (l1) l1.className = `h-px flex-1 transition-colors ${_cfStep > 1 ? 'bg-indigo-500' : 'bg-slate-700'} cf-step-line`;
+  if (l2) l2.className = `h-px flex-1 transition-colors ${_cfStep > 2 ? 'bg-indigo-500' : 'bg-slate-700'} cf-step-line`;
+}
+
+function cfOnCountry() {
+  cfOnCity(); // re-evaluate city state when country changes
+}
+
+function cfOnCity() {
+  const filled = val('cf-city').trim() && val('cf-country').trim();
+  const sec = document.getElementById('cf-areas-section');
+  if (filled) sec.classList.remove('hidden');
+  else        sec.classList.add('hidden');
+}
+
+function cfAutoPlural() {
+  const niche = val('cf-niche').trim();
+  const plural = document.getElementById('cf-niche-plural');
+  if (!plural.value || plural.dataset.auto === 'true') {
+    // Simple auto-plural: append 's' unless ends in 's'
+    plural.value = niche ? (niche.endsWith('s') ? niche : niche + 's') : '';
+    plural.dataset.auto = 'true';
+  }
+}
+
+async function cfGenerateAreas() {
+  const city    = val('cf-city').trim();
+  const country = val('cf-country').trim();
+  if (!city || !country) { toast('Enter city and country first.', 'error'); return; }
+  const btn = document.getElementById('cf-gen-btn');
+  btn.textContent = 'Generating...'; btn.disabled = true;
+  try {
+    const data = await api('/api/campaigns/suggest-areas', 'POST', { city, country });
+    document.getElementById('cf-localities').value = (data.areas || []).join('\n');
+    toast(`Generated ${(data.areas||[]).length} areas`, 'success');
+  } catch(e) {
+    toast('Could not generate areas: ' + e.message, 'error');
+  } finally {
+    btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg> Generate Areas';
+    btn.disabled = false;
+  }
+}
+
+function showCampForm(campId) {
+  _editingCampId = campId;
+  _cfStep = 1;
+  document.getElementById('camp-list-view').classList.add('hidden');
+  document.getElementById('camp-form-view').classList.remove('hidden');
+  document.getElementById('camp-form-title').textContent = campId ? 'Edit Campaign' : 'New Campaign';
+  document.getElementById('cf-save-btn').textContent = campId ? 'Save Changes' : 'Save Campaign';
+
+  // Show step 1, hide others
+  [1,2,3].forEach(n => document.getElementById(`cf-step-${n}`).classList[n===1?'remove':'add']('hidden'));
+  document.getElementById('cf-areas-section').classList.add('hidden');
+  _cfUpdateProgress();
+
+  // Clear all fields
+  ['cf-city','cf-country','cf-niche','cf-niche-plural','cf-industry','cf-service','cf-benefit','cf-pain'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    if (el.dataset) el.dataset.auto = '';
+  });
+  document.getElementById('cf-localities').value = '';
+
+  if (campId) {
+    api('/api/campaigns').then(camps => {
+      const c = camps.find(x => x.id === campId);
+      if (!c) return;
+      const t = c.config || {};
+      document.getElementById('cf-city').value         = t.city || '';
+      document.getElementById('cf-country').value      = t.country || '';
+      document.getElementById('cf-niche').value        = t.niche || '';
+      document.getElementById('cf-niche-plural').value = t.niche_plural || '';
+      document.getElementById('cf-industry').value     = t.industry || '';
+      document.getElementById('cf-service').value      = t.your_service || '';
+      document.getElementById('cf-benefit').value      = t.your_service_benefit || '';
+      document.getElementById('cf-pain').value         = t.pain_point || '';
+      document.getElementById('cf-localities').value   = (t.localities || []).join('\n');
+      // Show areas section if data exists
+      if (t.city && t.country) document.getElementById('cf-areas-section').classList.remove('hidden');
+    });
+  }
+}
+
+function hideCampForm() {
+  _editingCampId = null;
+  document.getElementById('camp-form-view').classList.add('hidden');
+  document.getElementById('camp-list-view').classList.remove('hidden');
+}
+
+async function saveCampaignForm() {
+  const btn = document.getElementById('cf-save-btn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const payload = {
+    city:                 val('cf-city'),
+    country:              val('cf-country'),
+    state:                '',
+    localities:           val('cf-localities').split('\n').map(s=>s.trim()).filter(Boolean),
+    niche:                val('cf-niche'),
+    niche_plural:         val('cf-niche-plural'),
+    industry:             val('cf-industry'),
+    your_service:         val('cf-service'),
+    your_service_benefit: val('cf-benefit'),
+    pain_point:           val('cf-pain'),
+  };
+  try {
+    if (_editingCampId) {
+      await api(`/api/campaigns/${_editingCampId}`, 'PUT', payload);
+      toast('Campaign updated!', 'success');
+    } else {
+      await api('/api/campaigns', 'POST', payload);
+      toast('Campaign created!', 'success');
+    }
+    hideCampForm();
+    loadCampaigns();
+    loadCampaignData();
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  } finally {
+    btn.textContent = _editingCampId ? 'Save Changes' : 'Save Campaign';
+    btn.disabled = false;
+  }
+}
+
+async function activateCamp(campId) {
+  try {
+    await api(`/api/campaigns/${campId}/activate`, 'POST');
+    toast('Campaign activated! Starting pipeline...', 'success');
+    loadCampaigns();
+    loadCampaignData();
+    loadStats();
+    // Auto-start the full pipeline for this campaign
+    runCampFull(campId);
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteCamp(campId, name) {
+  if (!confirm(`Delete campaign "${name}"? This cannot be undone.`)) return;
+  try {
+    await api(`/api/campaigns/${campId}`, 'DELETE');
+    toast('Campaign deleted', 'info');
+    loadCampaigns();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
+}
+
+// ── Campaign pipeline ─────────────────────────────────────────────────────────
+function toggleCampPipeline(btn) {
+  const card    = btn.closest('[data-camp-id]');
+  const panel   = card.querySelector('[data-panel]');
+  const chevron = btn.querySelector('[data-chevron]');
+  const hidden  = panel.classList.contains('hidden');
+  panel.classList.toggle('hidden', !hidden);
+  chevron.style.transform = hidden ? 'rotate(180deg)' : 'rotate(0deg)';
+}
+
+async function _validateCampStep(campId, step) {
+  // Reload campaigns to get latest state
+  let camps;
+  try { camps = await api('/api/campaigns'); } catch(e) { toast('Could not load campaigns', 'error'); return false; }
+  const camp = camps.find(x => x.id === campId);
+  if (!camp) { toast('Campaign not found', 'error'); return false; }
+
+  if (!camp.is_active) {
+    toast('Activate this campaign first before running the pipeline.', 'warn');
+    return false;
+  }
+
+  const cfg = camp.config || {};
+
+  if (step === 'scrape' || step === 'full') {
+    if (!cfg.city) {
+      toast('City is not set. Edit the campaign and fill in the city.', 'warn');
+      return false;
+    }
+    if (!(cfg.localities || []).length) {
+      toast('No target areas set. Edit the campaign and add at least one area.', 'warn');
+      return false;
+    }
+    if (!cfg.niche) {
+      toast('Business type (niche) is not set. Edit the campaign first.', 'warn');
+      return false;
+    }
+  }
+
+  if (step === 'send-emails' || step === 'full') {
+    let emailCfg;
+    try { emailCfg = (await api('/api/config')).email || {}; } catch(e) { emailCfg = {}; }
+    if (!emailCfg.your_email) {
+      toast('Your email address is not configured. Go to Settings first.', 'warn');
+      navigate('settings');
+      return false;
+    }
+    if (!emailCfg.smtp_host) {
+      toast('SMTP host is not configured. Go to Settings to set up your email account.', 'warn');
+      navigate('settings');
+      return false;
+    }
+    if (!emailCfg.smtp_user) {
+      toast('SMTP username is not configured. Go to Settings first.', 'warn');
+      navigate('settings');
+      return false;
+    }
+  }
+
+  return true;
+}
+
+async function runCampStep(campId, step) {
+  const status = await api('/api/pipeline/status').catch(() => ({}));
+  if (status.running) {
+    _updatePanelStatus('error', `Another pipeline is already running: "${status.step}". Stop it first.`);
+    toast('Already running: ' + status.step, 'warn');
+    return;
+  }
+
+  const valid = await _validateCampStep(campId, step);
+  if (!valid) return;
+
+  // Always include campaign_id so the backend runs for THIS campaign, not whatever is "active"
+  let body = { campaign_id: campId };
+  if (step === 'scrape')      body.max_results = parseInt(document.getElementById(`cp-scrape-max-${campId}`)?.value) || 20;
+  if (step === 'find-emails') body.priority    = document.getElementById(`cp-email-priority-${campId}`)?.value || 'HIGH';
+  if (step === 'send-emails') body.batch_size  = parseInt(document.getElementById(`cp-send-batch-${campId}`)?.value) || 20;
+
+  try {
+    await api('/api/pipeline/' + step, 'POST', body);
+    toast('Started: ' + stepLabel(step), 'success');
+    navigate('logs');
+  } catch(e) {
+    _updatePanelStatus('error', e.message);
+    toast(e.message, 'error');
+  }
+}
+
+async function runCampFull(campId) {
+  const status = await api('/api/pipeline/status').catch(() => ({}));
+  if (status.running) {
+    _updatePanelStatus('error', `Another pipeline is already running: "${status.step}". Stop it first.`);
+    toast('Already running: ' + status.step, 'warn');
+    return;
+  }
+
+  const valid = await _validateCampStep(campId, 'full');
+  if (!valid) return;
+
+  const maxResults = parseInt(document.getElementById(`cp-full-max-${campId}`)?.value) || 20;
+  try {
+    await api('/api/pipeline/full', 'POST', { campaign_id: campId, max_results: maxResults });
+    toast('Full pipeline started!', 'success');
+    navigate('logs');
+  } catch(e) {
+    _updatePanelStatus('error', e.message);
+    toast(e.message, 'error');
+  }
+}
+
+// ── Inbox ─────────────────────────────────────────────────────────────────────
+let _inboxTab = 'inbox';
+
+async function loadInboxPage() {
+  loadInboxStats();
+  setInboxTab(_inboxTab);
+}
+
+async function loadInboxStats() {
+  try {
+    const s = await api('/api/inbox/stats');
+    set('ib-stat-unread',  s.unread  ?? 0);
+    set('ib-stat-replies', s.replies ?? 0);
+    set('ib-stat-opened',  s.emails_opened ?? 0);
+    set('ib-stat-sent',    s.total   ?? 0);
+    const badge = document.getElementById('inbox-badge');
+    if (s.unread > 0) { badge.textContent = s.unread; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  } catch {}
+}
+
+function setInboxTab(tab) {
+  _inboxTab = tab;
+  ['inbox','sent','compose'].forEach(t => {
+    document.getElementById(`ibc-${t}`).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById(`ibtab-${t}`);
+    if (t === tab) {
+      btn.className = 'text-xs px-4 py-2.5 font-medium border-b-2 border-indigo-500 text-indigo-400 -mb-px transition-colors';
+    } else {
+      btn.className = 'text-xs px-4 py-2.5 font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 -mb-px transition-colors';
+    }
+  });
+  if (tab === 'inbox')   loadInboxMessages();
+  if (tab === 'sent')    loadSentMessages();
+}
+
+async function loadInboxMessages() {
+  const el = document.getElementById('inbox-list');
+  el.innerHTML = '<div class="text-center text-slate-500 text-sm py-12">Loading…</div>';
+  try {
+    const msgs = await api('/api/inbox/messages');
+    if (!msgs.length) {
+      el.innerHTML = '<div class="text-center text-slate-500 text-sm py-12">No messages yet. Click <strong>Sync Inbox</strong> to fetch emails from your mail server.</div>';
+      return;
+    }
+    el.innerHTML = msgs.map(m => _inboxRow(m)).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="text-center text-red-400 text-sm py-8">${esc(e.message)}</div>`;
+  }
+}
+
+function _inboxRow(m) {
+  const unreadDot = !m.is_read
+    ? '<span class="w-2 h-2 rounded-full bg-indigo-400 shrink-0 mt-1.5"></span>'
+    : '<span class="w-2 h-2 rounded-full bg-transparent shrink-0 mt-1.5"></span>';
+  const replyBadge = m.is_reply
+    ? '<span class="text-xs px-1.5 py-0.5 bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 rounded-full">Reply</span>'
+    : '';
+  const fromName = m.from_name || m.from_email || 'Unknown';
+  const ts = m.received_at ? new Date(m.received_at).toLocaleString() : '';
+  const preview = (m.body_text || '').replace(/\s+/g,' ').slice(0, 120);
+  return `
+  <div class="border border-slate-700/60 rounded-xl bg-slate-800/60 hover:bg-slate-800/80 transition-colors cursor-pointer"
+       onclick="toggleInboxMsg(${m.id}, this)" id="ibmsg-${m.id}">
+    <div class="px-4 py-3 flex items-start gap-3">
+      ${unreadDot}
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-sm font-semibold text-white">${esc(fromName)}</span>
+            ${replyBadge}
+          </div>
+          <span class="text-xs text-slate-500 shrink-0">${esc(ts)}</span>
+        </div>
+        <p class="text-xs font-medium text-slate-300 mt-0.5">${esc(m.subject||'(no subject)')}</p>
+        <p class="text-xs text-slate-500 mt-0.5 truncate">${esc(preview)}</p>
+      </div>
+    </div>
+    <div id="ibmsg-body-${m.id}" class="hidden border-t border-slate-700/40 px-4 py-3 space-y-3">
+      <pre class="text-xs text-slate-300 whitespace-pre-wrap leading-relaxed font-sans max-h-60 overflow-y-auto">${esc(m.body_text||'')}</pre>
+      <div class="flex gap-2">
+        <button onclick="replyToMsg(event, ${esc(JSON.stringify(m))})"
+          class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition-colors">Reply</button>
+        ${!m.is_read ? `<button onclick="markRead(event,${m.id},this)" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-lg transition-colors">Mark Read</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleInboxMsg(id, el) {
+  const body = document.getElementById(`ibmsg-body-${id}`);
+  body.classList.toggle('hidden');
+}
+
+async function markRead(event, msgId, btn) {
+  event.stopPropagation();
+  try {
+    await api(`/api/inbox/messages/${msgId}/read`, 'POST');
+    btn.remove();
+    const dot = document.querySelector(`#ibmsg-${msgId} span.bg-indigo-400`);
+    if (dot) dot.className = dot.className.replace('bg-indigo-400', 'bg-transparent');
+    loadInboxStats();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function replyToMsg(event, msg) {
+  event.stopPropagation();
+  setInboxTab('compose');
+  document.getElementById('compose-to').value      = msg.from_email || '';
+  document.getElementById('compose-subject').value = msg.subject?.startsWith('Re:') ? msg.subject : `Re: ${msg.subject||''}`;
+  const quote = (msg.body_text||'').split('\n').map(l => '> '+l).join('\n');
+  document.getElementById('compose-body').value    = `\n\n---\n${quote}`;
+  document.getElementById('compose-body').focus();
+}
+
+async function loadSentMessages() {
+  const el = document.getElementById('sent-list');
+  el.innerHTML = '<div class="text-center text-slate-500 text-sm py-12">Loading…</div>';
+  try {
+    const msgs = await api('/api/inbox/sent');
+    if (!msgs.length) {
+      el.innerHTML = '<div class="text-center text-slate-500 text-sm py-12">No sent emails yet.</div>';
+      return;
+    }
+    el.innerHTML = `
+      <div class="overflow-x-auto rounded-xl border border-slate-700/60">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-700 text-xs text-slate-400 uppercase tracking-wide bg-slate-800/80">
+              <th class="text-left px-4 py-3 font-medium">To</th>
+              <th class="text-left px-4 py-3 font-medium">Subject</th>
+              <th class="text-left px-4 py-3 font-medium">Status</th>
+              <th class="text-left px-4 py-3 font-medium">Opens</th>
+              <th class="text-left px-4 py-3 font-medium">Reply</th>
+              <th class="text-left px-4 py-3 font-medium">Sent At</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${msgs.map(m => _sentRow(m)).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  } catch(e) {
+    el.innerHTML = `<div class="text-center text-red-400 text-sm py-8">${esc(e.message)}</div>`;
+  }
+}
+
+function _sentRow(m) {
+  const status = m.sent === 'Yes'
+    ? '<span class="text-xs text-emerald-400">&#10003; Sent</span>'
+    : m.sent === 'Skipped'
+      ? '<span class="text-xs text-slate-500">Skipped</span>'
+      : '<span class="text-xs text-amber-400">Pending</span>';
+  const opens = parseInt(m.open_count) || 0;
+  const opensBadge = opens > 0
+    ? `<span class="text-xs text-blue-400 font-medium">&#128065; ${opens}</span>`
+    : '<span class="text-slate-600 text-xs">—</span>';
+  const replyCount = parseInt(m.reply_count) || 0;
+  const replyBadge = replyCount > 0
+    ? `<span class="text-xs text-emerald-400 font-medium">&#10003; ${replyCount}</span>`
+    : '<span class="text-slate-600 text-xs">—</span>';
+  const sentAt = m.sent_at ? new Date(m.sent_at).toLocaleDateString() : '—';
+  return `<tr class="border-t border-slate-700/50 hover:bg-slate-800/40 transition-colors">
+    <td class="px-4 py-3 text-xs text-slate-300">${esc(m.to_email||'')}</td>
+    <td class="px-4 py-3 text-xs text-white max-w-[200px] truncate" title="${esc(m.subject||'')}">${esc(m.subject||'')}</td>
+    <td class="px-4 py-3">${status}</td>
+    <td class="px-4 py-3">${opensBadge}</td>
+    <td class="px-4 py-3">${replyBadge}</td>
+    <td class="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">${esc(sentAt)}</td>
+  </tr>`;
+}
+
+async function syncInbox(btn) {
+  const orig = btn.innerHTML;
+  btn.disabled = true;
+  btn.textContent = 'Syncing…';
+  try {
+    const r = await api('/api/inbox/sync', 'POST');
+    if (r.error) { toast('Sync error: ' + r.error, 'error'); }
+    else { toast(`Synced — ${r.synced} messages processed`, 'success'); }
+    loadInboxStats();
+    if (_inboxTab === 'inbox') loadInboxMessages();
+  } catch(e) {
+    toast('Sync failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = orig;
+  }
+}
+
+async function sendCompose(btn) {
+  const to      = document.getElementById('compose-to').value.trim();
+  const subject = document.getElementById('compose-subject').value.trim();
+  const body    = document.getElementById('compose-body').value.trim();
+  if (!to || !subject || !body) { toast('Fill in all fields', 'warn'); return; }
+  const orig = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    await api('/api/inbox/compose', 'POST', { to, subject, body, business_id: '' });
+    toast('Email sent!', 'success');
+    document.getElementById('compose-to').value = '';
+    document.getElementById('compose-subject').value = '';
+    document.getElementById('compose-body').value = '';
+    loadInboxStats();
+  } catch(e) {
+    toast('Send failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = orig;
+  }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+initAuth().then(() => {
+  navigate('dashboard');
+  connectLogs();
+  loadCampaigns();
+  setInterval(pollStatus, 2500);
+  setInterval(() => { if (currentPage === 'dashboard') loadStats(); }, 30_000);
+  setInterval(() => loadInboxStats(), 60_000);
+  loadInboxStats();
+  pollStatus();
+});
+</script>
+</body>
+</html>

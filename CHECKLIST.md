@@ -1,242 +1,114 @@
-# ✅ Quick Start Checklist
+# Quick Start Checklist
 
-## 📦 Before You Start
-
-### Files Needed
-
-- [ ] All Python files in project folder
-- [ ] `requirements.txt` file
-- [ ] `.env` file created
-- [ ] `credentials.json` (Google Sheets)
-- [ ] `gmail_credentials.json` (Gmail API)
+## Before You Start
 
 ### Software
-
 - [ ] Python 3.11+ installed
-- [ ] Virtual environment created & activated
-- [ ] All dependencies installed (`pip install -r requirements.txt`)
-- [ ] Playwright browser installed (`playwright install chromium`)
+- [ ] Virtual environment created and activated
+- [ ] `pip install -r requirements.txt -r requirements_api.txt` completed
+- [ ] `playwright install chromium` completed
+
+### Services
+- [ ] PostgreSQL database created (local or hosted)
+- [ ] OpenRouter account and API key (https://openrouter.ai)
+- [ ] SMTP email account ready (cPanel, Outlook, Zoho, etc.)
 
 ---
 
-## 🔐 API Keys Checklist
+## Environment Variables (`.env`)
 
-### 1. Gemini API (AI Emails)
+- [ ] `DATABASE_URL=postgresql://...` set
+- [ ] `OPENROUTER_API_KEY=sk-or-...` set
+- [ ] `SMTP_PASSWORD=...` set
 
-- [ ] Got API key from https://makersuite.google.com/app/apikey
-- [ ] Added to `.env` file: `GEMINI_API_KEY=AIza...`
-
-### 2. Google Sheets (Database)
-
-- [ ] Enabled Google Sheets API
-- [ ] Enabled Google Drive API
-- [ ] Created service account
-- [ ] Downloaded `credentials.json`
-- [ ] Tested connection: `python sheets_database.py`
-
-### 3. Gmail API (Send Emails)
-
-- [ ] Enabled Gmail API
-- [ ] Created OAuth credentials
-- [ ] Downloaded `gmail_credentials.json`
-- [ ] Configured consent screen
-- [ ] Added yourself as test user
+Optional:
+- [ ] `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` (for Google OAuth)
+- [ ] `APP_URL` (for deployments — default is `http://localhost:8000`)
 
 ---
 
-## ⚙️ Configuration Checklist
+## `config.py` Settings
 
-### config.py
-
-- [ ] Updated `TARGET['city']` to your target city
-- [ ] Updated `TARGET['localities']` with neighborhoods
-- [ ] Updated `TARGET['niche']` to your business type
-- [ ] Updated `TARGET['niche_plural']`
-- [ ] Updated `TARGET['your_service']`
-- [ ] Updated `TARGET['your_service_benefit']`
-- [ ] Updated `EMAIL['your_name']`
-- [ ] Updated `EMAIL['your_email']` ⚠️ IMPORTANT!
+- [ ] `TARGET['city']` updated
+- [ ] `TARGET['state']` and `TARGET['country']` updated
+- [ ] `TARGET['localities']` filled with real area names
+- [ ] `TARGET['niche']` set to your business type
+- [ ] `TARGET['niche_plural']` set
+- [ ] `TARGET['your_service']` set
+- [ ] `TARGET['your_service_benefit']` set
+- [ ] `EMAIL['your_name']` set to your name
+- [ ] `EMAIL['your_email']` set to your sending address
+- [ ] `EMAIL['smtp_host']`, `smtp_port`, `smtp_user` configured
 
 ---
 
-## 🧪 Test Everything
-
-### 1. Test Database
+## First Run
 
 ```bash
-python sheets_database.py
+# Activate venv first
+venv\Scripts\activate        # Windows
+source venv/bin/activate     # Mac/Linux
+
+python api.py
 ```
 
-✅ Should show: "Connected to Google Sheets"
+Open http://localhost:8000
 
-### 2. Test Configuration
-
-```bash
-python config.py
-```
-
-✅ Should show your current configuration
-
-### 3. Test Scraper (dry run)
-
-```bash
-python scraper.py
-```
-
-✅ Should open browser and start scraping
-
-### 4. Test Gmail
-
-```bash
-python email_sender.py
-```
-
-✅ Should connect to Gmail (will open browser first time)
+- [ ] Landing page loads
+- [ ] Sign up for an account at `/auth`
+- [ ] Dashboard loads at `/dashboard`
 
 ---
 
-## 🚀 Ready to Run!
+## Dashboard Workflow
 
-### Option 1: Full Pipeline
-
-```bash
-python main.py
-# Choose option 13
-```
-
-### Option 2: Step by Step
-
-```bash
-python main.py
-# Choose options 1 → 3 → 5 → 7 → 9
-```
+- [ ] Create a campaign (Campaigns tab → New Campaign)
+- [ ] Activate the campaign
+- [ ] Run **Scrape** (try 10–20 results per area first)
+- [ ] Run **Analyze** (scores websites)
+- [ ] Run **Find Emails**
+- [ ] Run **Generate Emails**
+- [ ] Check email preview looks good
+- [ ] Run **Send** (start with a small batch: 10–20)
 
 ---
 
-## 📊 Monitor Progress
+## Verify Each Step
 
-### Check Google Sheet
-
-- URL shown when you run `sheets_database.py`
-- Should have 4 tabs: Agencies, Generated Emails, Sent Emails, Statistics
-
-### Check Stats
-
-```bash
-python main.py
-# Choose option 12
-```
+| Step | What to check |
+|---|---|
+| Scrape | Leads appear in the Leads tab |
+| Analyze | Leads have priority (HIGH/MEDIUM/LOW) |
+| Find Emails | Leads have email addresses |
+| Generate | Emails tab shows subject + body |
+| Send | Sent count increases in stats |
+| Inbox sync | Replies appear in Inbox tab |
 
 ---
 
-## ⚠️ Common Issues
+## Common Issues
 
-### "credentials.json not found"
-
-→ Make sure file is in project folder, not in Downloads
-
-### "GEMINI_API_KEY not found"
-
-→ Create `.env` file (not .env.txt)
-
-### "Gmail auth failed"
-
-→ Make sure you added yourself as test user in OAuth consent screen
-
-### Browser closes immediately
-
-→ Change `headless=True` to `headless=False` in scraper.py
+| Error | Fix |
+|---|---|
+| `DATABASE_URL not set` | Add to `.env` |
+| `OPENROUTER_API_KEY not set` | Add to `.env` |
+| SMTP connection failed | Check `smtp_host`/`smtp_port`/`SMTP_PASSWORD` |
+| "No active campaign" | Campaigns tab → activate a campaign |
+| Browser closes (scraper) | Set `visible_browser: True` in `config.py` |
+| Playwright not found | Run `playwright install chromium` |
 
 ---
 
-## 💰 Cost Verification
-
-- Gemini API: FREE ✅
-- PageSpeed API: FREE ✅
-- Gmail API: FREE ✅
-- Google Sheets: FREE ✅
-- Playwright: FREE ✅
-
-**Total: $0/month** 🎉
-
----
-
-## 📈 Success Metrics
-
-After running full pipeline once:
-
-- [ ] Businesses scraped: 100+
-- [ ] HIGH priority: 20-30
-- [ ] Emails found: 15-25
-- [ ] Emails generated: 15-25
-- [ ] Ready to send: ✅
-
-Now send 10-20 per day!
-
----
-
-## 🔄 Daily Routine
+## Daily Routine
 
 **Morning:**
-
-```bash
-python main.py
-# Option 9: Send 10-20 emails
-```
+- Send a batch of 10–20 emails from the dashboard
 
 **Evening:**
-
-- Check Google Sheet for replies
-- Respond to any replies promptly
-- Update notes
+- Sync inbox (Inbox tab → Sync)
+- Reply to any leads within 24 hours
 
 **Weekly:**
-
-- Review what's working
-- Adjust email templates if needed
-- Try new localities
-
----
-
-## 🎯 What Makes This System Special
-
-✅ **100% FREE** - No monthly costs
-✅ **Flexible** - Change city/niche anytime
-✅ **Automated** - Runs on autopilot
-✅ **Scalable** - Handle 1000s of businesses
-✅ **Smart** - AI personalizes every email
-✅ **Safe** - Respects rate limits
-✅ **Trackable** - Everything in Google Sheets
-
----
-
-## 💡 Quick Tips
-
-1. **Start small**: Test with 10 businesses first
-2. **Be patient**: Cold outreach takes time
-3. **Stay consistent**: Send emails daily
-4. **Reply fast**: Respond within 24 hours
-5. **Track results**: See what works
-
----
-
-## 🆘 Need Help?
-
-1. Check SETUP_GUIDE.md (detailed instructions)
-2. Read error messages carefully
-3. Google the specific error
-4. Check official API docs
-
----
-
-## ✨ You're All Set!
-
-Run this to start:
-
-```bash
-cd business-automation
-source venv/bin/activate  # Windows: venv\Scripts\activate
-python main.py
-```
-
-Good luck! 🚀
+- Check open/reply rates in stats
+- Add new localities or niches if needed
+- Adjust AI tone/guidelines if response rate is low

@@ -4,7 +4,7 @@ Uses Google PageSpeed Insights API (25,000 requests/day FREE)
 """
 import requests
 import time
-from sheets_database import SheetsDatabase
+from pg_database import PostgresDatabase as SheetsDatabase
 from config import TARGET, QUALIFICATION
 
 class WebsiteAnalyzer:
@@ -179,9 +179,14 @@ class WebsiteAnalyzer:
     
     def analyze_all_businesses(self):
         """Analyze and qualify all businesses"""
-        print(f"\n🚀 Analyzing {self.niche}s...")
-        
-        businesses = self.db.get_unqualified_businesses()
+        import pg_database as _pgdb
+        if not _pgdb._current_campaign_id:
+            raise RuntimeError(
+                "No active campaign set. Activate a campaign before running Analyze."
+            )
+
+        print(f"\n🚀 Analyzing {self.niche}s for campaign {_pgdb._current_campaign_id}...")
+        businesses = self.db.get_unqualified_businesses_by_campaign(_pgdb._current_campaign_id)
         total = len(businesses)
         
         if total == 0:

@@ -13,47 +13,120 @@ TARGET = {
     "city": "Seattle & Eastside suburbs",
     "state": "Washington",
     "country": "USA",
-    "localities": [
-        "Queen Anne (Seattle)",
-        "Capitol Hill (Seattle)",
-        "Madison Park (Seattle)",
-        "Laurelhurst (Seattle)",
-        "Windermere (Seattle)",
-        "Montlake (Seattle)",
-        "Broadmoor (Seattle)",
-        "View Ridge (Seattle)",
-        "Ravenna (Seattle)",
-        "Wallingford (Seattle)",
-        "Belltown (Seattle)",
-        "Magnolia (Seattle)",
-        "Mercer Island",
-        "Hunts Point",
-        "Medina",
-        "Clyde Hill",
-        "Yarrow Point",
-        "Bellevue, Downtown Bellevue",
-        "Bellevue, Bridle Trails",
-        "Bellevue, West Bellevue",
-        "Bellevue, Newport Shores",
-        "Kirkland, Market/Downtown",
-        "Kirkland, Houghton",
-        "Redmond, Education Hill",
-        "Redmond, Overlake",
-        "Redmond, Bear Creek",
-        "Sammamish",
-        "Issaquah",
-        "Bothell Highlands",
-        "Sammamish Plateau"
-    ],
-    
+
+  "localities": [
+    "Miami Beach",
+    "Coral Gables",
+    "Kendall (Miami)",
+    "Doral",
+    "Hialeah",
+    "Hollywood (Florida)",
+    "Pembroke Pines",
+    "Fort Lauderdale Downtown",
+    "Boca Raton",
+    "Delray Beach",
+    "West Palm Beach",
+    "Sarasota",
+    "Naples (Florida)",
+    "Cape Coral",
+    "Port St. Lucie",
+
+    "Scottsdale",
+    "Chandler (Arizona)",
+    "Tempe",
+    "Gilbert (Arizona)",
+    "Glendale (Arizona)",
+    "Peoria (Arizona)",
+    "Mesa (Arizona)",
+    "Paradise Valley (Arizona)",
+
+    "Dallas Downtown",
+    "Plano (Texas)",
+    "Frisco (Texas)",
+    "McKinney (Texas)",
+    "Arlington (Texas)",
+    "Irving (Texas)",
+    "Katy (Texas)",
+    "Sugar Land",
+    "The Woodlands",
+    "Spring (Texas)",
+    "Pearland",
+    "Round Rock",
+    "Cedar Park",
+    "San Antonio Northside",
+
+    "Pasadena (California)",
+    "Glendale (California)",
+    "Burbank",
+    "Long Beach",
+    "Santa Ana",
+    "Anaheim",
+    "Irvine",
+    "Fremont (California)",
+    "Oakland",
+    "Sunnyvale",
+    "Mountain View",
+    "Santa Clara",
+    "Riverside (California)",
+    "San Bernardino",
+
+    "Charlotte Uptown",
+    "Ballantyne (Charlotte)",
+    "Huntersville",
+    "Matthews (North Carolina)",
+    "Concord (North Carolina)",
+    "Raleigh North Hills",
+    "Cary (North Carolina)",
+    "Apex (North Carolina)",
+    "Durham",
+
+    "Denver Downtown",
+    "Aurora (Colorado)",
+    "Lakewood (Colorado)",
+    "Arvada",
+    "Westminster (Colorado)",
+    "Littleton (Colorado)",
+    "Boulder",
+
+    "Chicago Loop",
+    "Naperville",
+    "Schaumburg",
+    "Evanston",
+    "Oak Park (Illinois)",
+    "Joliet",
+
+    "Nashville Downtown",
+    "Franklin (Tennessee)",
+    "Brentwood (Tennessee)",
+    "Murfreesboro",
+
+    "Kansas City Downtown",
+    "Overland Park",
+    "Olathe",
+    "Lees Summit",
+
+    "Columbus Downtown",
+    "Dublin (Ohio)",
+    "Westerville",
+    "Cleveland Heights",
+    "Lakewood (Ohio)",
+
+    "Brooklyn",
+    "Queens",
+    "Staten Island",
+    "Yonkers",
+    "Jersey City",
+    "Newark (New Jersey)"
+  ],
+  
     # Business Niche
     "niche": "home service business",
     "niche_plural": "home service businesses",
-    "industry": "home services (HVAC, Roofing, Plumbing)",
+    "industry": "home services ( HVAC, Plumbing only)",
 
     # What you're selling
-    "your_service": "websites and digital presence",
-    "your_service_benefit": "get more leads online",
+    "your_service": "website conversion optimization",
+    "your_service_benefit": "get more leads online and increase revenue",
     "pain_point": "limited online visibility and lead generation"
 }
 
@@ -61,7 +134,7 @@ SCRAPING = {
     "results_per_locality": 20,
     "scroll_times": 3,
     "delay_between_businesses": 2,
-    "delay_between_localities": 45,
+    "delay_between_localities": 40,
     "visible_browser": False,  # True = see browser, False = invisible
 }
 
@@ -75,18 +148,46 @@ QUALIFICATION = {
 }
 
 EMAIL = {
-    "max_per_day": 50,
-    "batch_size": 20,
-    "delay_between_sends": 30,
-    "your_name": "Mubeen",
-    "your_email": "jawedmubeen905@gmail.com",  # ⚠️ UPDATE THIS!
-    "signature": "Mubeen",
+    # ── Who you are ───────────────────────────────────────────────────────────
+    "your_name":  "Mubeen",
+    "your_email": "mubeen@revenuelyft.com",
+
+    # ── SMTP settings (works with any provider) ───────────────────────────────
+    # Common examples:
+    #   cPanel / Namecheap  → smtp_host: mail.yourdomain.com   port: 465 or 587
+    #   Outlook / Office365 → smtp_host: smtp.office365.com    port: 587
+    #   Zoho Mail           → smtp_host: smtp.zoho.com         port: 465 or 587
+    #   Yahoo Mail          → smtp_host: smtp.mail.yahoo.com   port: 465
+    "smtp_host":     "mail.revenuelyft.com",   # ← your SMTP server
+    "smtp_port":     465,                       # ← 465 (SSL) or 587 (STARTTLS)
+    "smtp_user":     "mubeen@revenuelyft.com", # ← usually same as your_email
+    "smtp_password": "",                        # ← set SMTP_PASSWORD env var instead
+    # IMAP (for saving sent emails to webmail Sent folder)
+    # Leave blank to use the same host as smtp_host (works for most cPanel/Namecheap servers)
+    "imap_host":     "",                        # ← e.g. mail.revenuelyft.com (blank = same as smtp_host)
+
+    # ── Sending limits ────────────────────────────────────────────────────────
+    "max_per_day":          1000,
+    "batch_size":           20,
+    "delay_between_sends":  30,
+    "signature":            "Mubeen",
+
+    # ── Email content ─────────────────────────────────────────────────────────
+    # "ai" = AI writes each email individually  |  "template" = fixed template
+    "email_mode":             "ai",
+    "ai_tone":                "casual_professional",
+    "ai_guidelines":          "",
+    "ai_sample_email":        "",
+    "email_template_subject": "",
+    "email_template_body":    "",
 }
 
 AI = {
-    "model": "google/gemini-flash-1.5",  # or "openai/gpt-4o-mini"
+    "model": "arcee-ai/trinity-large-preview:free",  # or "openai/gpt-4o-mini"
     "temperature": 0.9,
     "max_tokens": 2048,
+    "api_url": "https://openrouter.ai/api/v1/chat/completions"
+    
 }
 
 SHEETS = {
@@ -95,7 +196,7 @@ SHEETS = {
     # 1. Go to sheets.google.com and create new spreadsheet
     # 2. Share it with service account email (from credentials.json)
     # 3. Add URL here:
-    "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1vhFkrNpNjLcWY0ADmNeQv7BYfFSllYo7CnQDm8aZ4Z4/edit?usp=sharing",  # Paste URL here if needed
+    "spreadsheet_url": "https://docs.google.com/spreadsheets/d/1IVU4_k2C5s3sZu5u5l0rAdzKrkda5qBd7LA8SX6ryRw/edit?usp=sharing",  # Paste URL here if needed
     "sheets": {
         "agencies": "Agencies",
         "emails": "Generated Emails",

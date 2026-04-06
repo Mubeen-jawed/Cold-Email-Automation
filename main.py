@@ -3,7 +3,7 @@ Main Control Panel - 100% FREE Automation
 Works for ANY city, ANY niche!
 """
 import asyncio
-from sheets_database import SheetsDatabase
+from pg_database import PostgresDatabase as SheetsDatabase
 from scraper import GoogleMapsScraper
 from analyzer import WebsiteAnalyzer
 from email_finder import EmailFinder
@@ -122,10 +122,16 @@ def send_emails():
     print_header("STEP 5: SENDING EMAILS")
     
     sender = GmailSender()
-    
-    if not sender.test_connection():
+
+    result = sender.test_connection()
+    if not result.get('ok'):
         print("\n❌ Gmail connection failed!")
-        print("Please check your gmail_credentials.json file")
+        if result.get('error'):
+            print(f"   Error: {result['error']}")
+        if not result.get('matched', True):
+            print(f"   Authenticated as : {result.get('authenticated_as')}")
+            print(f"   Config email     : {result.get('configured_as')}")
+            print("   Delete gmail_token.json and re-authenticate with the correct account.")
         return
     
     print(f"\nHow many emails to send? (max: {EMAIL['max_per_day']})")

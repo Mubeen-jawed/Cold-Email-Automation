@@ -1,0 +1,1676 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadFlow — Get Clients While You Sleep</title>
+  <meta name="description"
+    content="Answer 3 questions. LeadFlow finds the leads, writes the emails, and sends them for you. Wake up to replies." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap"
+    rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0a0f;
+      --surface: #111118;
+      --surface-2: #18181f;
+      --border: rgba(255, 255, 255, 0.07);
+      --border-light: rgba(255, 255, 255, 0.12);
+      --accent: #5046e5;
+      --accent-dim: rgba(80, 70, 229, 0.12);
+      --accent-glow: rgba(80, 70, 229, 0.3);
+      --text: #f0f0f5;
+      --text-muted: #7a7a8c;
+      --text-dim: #4a4a5a;
+      --heading: 'Syne', sans-serif;
+      --body: 'DM Sans', sans-serif;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent-dim);
+      border-radius: 2px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      padding: 0 clamp(20px, 5vw, 60px);
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.3s;
+    }
+
+    .nav-inner {
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--heading);
+      font-weight: 800;
+      font-size: 14px;
+      color: #0a0a0f;
+    }
+
+    .logo-name {
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 400;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn-ghost {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: color 0.2s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #0a0a0f;
+      text-decoration: none;
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 14px;
+      padding: 9px 20px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      background: #00ffcb;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--accent-glow);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 120px clamp(20px, 5vw, 60px) 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 229, 176, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 176, 0.04) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -60%);
+      background: radial-gradient(circle, rgba(0, 229, 176, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      max-width: 860px;
+      width: 100%;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 229, 176, 0.2);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 32px;
+    }
+
+    .eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+      }
+    }
+
+    h1 {
+      font-family: var(--heading);
+      font-size: clamp(42px, 7vw, 80px);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .h1-accent {
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(17px, 2.2vw, 20px);
+      color: var(--text-muted);
+      max-width: 580px;
+      margin: 0 auto 44px;
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    .hero-sub strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    .btn-primary-lg {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #0a0a0f;
+      text-decoration: none;
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 16px;
+      padding: 16px 32px;
+      border-radius: 12px;
+      transition: all 0.2s;
+      box-shadow: 0 0 0 1px rgba(0, 229, 176, 0.3), 0 8px 32px rgba(0, 229, 176, 0.25);
+    }
+
+    .btn-primary-lg:hover {
+      background: #00ffcb;
+      transform: translateY(-2px);
+      box-shadow: 0 0 0 1px rgba(0, 229, 176, 0.5), 0 16px 48px rgba(0, 229, 176, 0.35);
+    }
+
+    .btn-secondary-lg {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 400;
+      padding: 16px 28px;
+      border-radius: 12px;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary-lg:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
+      background: var(--surface);
+    }
+
+    .hero-proof {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .proof-faces {
+      display: flex;
+    }
+
+    .proof-face {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--bg);
+      margin-left: -8px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .proof-face:first-child {
+      margin-left: 0;
+    }
+
+    .pf1 {
+      background: #4f46e5;
+      color: #fff;
+    }
+
+    .pf2 {
+      background: #0891b2;
+      color: #fff;
+    }
+
+    .pf3 {
+      background: #7c3aed;
+      color: #fff;
+    }
+
+    .pf4 {
+      background: #dc2626;
+      color: #fff;
+    }
+
+    .pf5 {
+      background: #059669;
+      color: #fff;
+    }
+
+    .proof-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .proof-text strong {
+      color: var(--text);
+    }
+
+    .stars {
+      color: #fbbf24;
+      letter-spacing: 1px;
+    }
+
+    /* ── NICHE STRIP ── */
+    .niche-strip {
+      padding: 18px clamp(20px, 5vw, 60px);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .niche-strip-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .niche-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .niche-divider {
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .niche-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .niche-tag {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .niche-more {
+      font-size: 12px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ── SECTION BASE ── */
+    section {
+      padding: clamp(64px, 10vw, 112px) clamp(20px, 5vw, 60px);
+    }
+
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    h2 {
+      font-family: var(--heading);
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -0.025em;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      font-size: 17px;
+      color: var(--text-muted);
+      max-width: 520px;
+      font-weight: 300;
+      line-height: 1.65;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .hiw {
+      background: var(--surface);
+    }
+
+    .hiw-header {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+
+    .hiw-header .section-sub {
+      margin: 0 auto;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      background: var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .step {
+      background: var(--surface-2);
+      padding: 36px 32px;
+      position: relative;
+      transition: background 0.25s;
+    }
+
+    .step:hover {
+      background: #1e1e28;
+    }
+
+    .step-num {
+      font-family: var(--heading);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-num::before {
+      content: '';
+      display: block;
+      width: 20px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .step-icon {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+
+    .step h3 {
+      font-family: var(--heading);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    .step p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    .step-connector {
+      position: absolute;
+      right: -2px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 16px;
+      z-index: 2;
+      display: none;
+    }
+
+    /* ── FEATURES ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 56px;
+    }
+
+    .feat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feat-card:hover {
+      border-color: rgba(0, 229, 176, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .feat-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 229, 176, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .feat-card h3 {
+      font-family: var(--heading);
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .feat-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      font-weight: 300;
+    }
+
+    /* ── PROOF ── */
+    .proof-section {
+      background: var(--surface);
+    }
+
+    .testimonials {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 56px;
+    }
+
+    .tcard {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+
+    .tcard:hover {
+      border-color: var(--border-light);
+    }
+
+    .tcard-stars {
+      color: #fbbf24;
+      font-size: 13px;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+
+    .tcard-quote {
+      font-size: 15px;
+      color: var(--text);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    .tcard-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .author-name {
+      font-family: var(--heading);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    /* ── STATS ── */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      margin-top: 60px;
+    }
+
+    .stat {
+      flex: 1;
+      min-width: 150px;
+      padding: 36px 32px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat:last-child {
+      border-right: none;
+    }
+
+    .stat-number {
+      font-family: var(--heading);
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 56px;
+      align-items: start;
+    }
+
+    .price-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      transition: border-color 0.2s;
+    }
+
+    .price-card:hover {
+      border-color: var(--border-light);
+    }
+
+    .price-card.featured {
+      background: linear-gradient(145deg, #0d0e2b, #0a0a1a);
+      border-color: rgba(0, 50, 229, 0.3);
+      position: relative;
+    }
+
+    .price-card.featured:hover {
+      border-color: rgba(0, 57, 229, 0.5);
+    }
+
+    .featured-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: #0a0a0f;
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 100px;
+    }
+
+    .price-tier {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+
+    .price-card.featured .price-tier {
+      color: var(--accent);
+    }
+
+    .price-amount {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      margin-bottom: 6px;
+    }
+
+    .price-num {
+      font-family: var(--heading);
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .price-per {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .price-tagline {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    .price-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 24px;
+    }
+
+    .price-features {
+      list-style: none;
+      margin-bottom: 32px;
+    }
+
+    .price-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-muted);
+      padding: 6px 0;
+      font-weight: 300;
+    }
+
+    .price-card.featured .price-features li {
+      color: var(--text);
+    }
+
+    .price-check {
+      color: var(--accent);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .price-cross {
+      color: var(--text-dim);
+      font-size: 14px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .crossed {
+      color: var(--text-dim);
+      text-decoration: line-through;
+    }
+
+    .btn-price {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-family: var(--heading);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      transition: all 0.2s;
+    }
+
+    .btn-price-ghost {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+    }
+
+    .btn-price-ghost:hover {
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-price-accent {
+      background: var(--accent);
+      color: #0a0a0f;
+      box-shadow: 0 8px 24px rgba(0, 229, 176, 0.25);
+    }
+
+    .btn-price-accent:hover {
+      background: #00ffcb;
+      box-shadow: 0 12px 32px rgba(0, 229, 176, 0.35);
+      transform: translateY(-1px);
+    }
+
+    /* ── FAQ ── */
+    .faq-list {
+      max-width: 680px;
+      margin: 56px auto 0;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faq-q {
+      width: 100%;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 0;
+      cursor: pointer;
+      font-family: var(--body);
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 400;
+      text-align: left;
+      gap: 20px;
+      transition: color 0.2s;
+    }
+
+    .faq-q:hover {
+      color: var(--accent);
+    }
+
+    .faq-icon {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--text-muted);
+      transition: all 0.2s;
+    }
+
+    .faq-item.open .faq-icon {
+      background: var(--accent-dim);
+      border-color: rgba(0, 229, 176, 0.3);
+      color: var(--accent);
+    }
+
+    .faq-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.3s;
+    }
+
+    .faq-body.open {
+      max-height: 300px;
+    }
+
+    .faq-body p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.75;
+      padding-bottom: 20px;
+      font-weight: 300;
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .cta-box {
+      max-width: 640px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .cta-glow {
+      position: absolute;
+      width: 400px;
+      height: 300px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(ellipse, rgba(0, 229, 176, 0.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cta-box h2 {
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    .cta-sub {
+      font-size: 17px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      font-weight: 300;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .cta-note {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 16px;
+      position: relative;
+    }
+
+    .cta-note span {
+      color: var(--text-muted);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      padding: 40px clamp(20px, 5vw, 60px);
+    }
+
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .footer-copy {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      list-style: none;
+    }
+
+    .footer-links a {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--text);
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-up.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .fade-up-d1 {
+      transition-delay: 0.1s;
+    }
+
+    .fade-up-d2 {
+      transition-delay: 0.2s;
+    }
+
+    .fade-up-d3 {
+      transition-delay: 0.3s;
+    }
+
+    .fade-up-d4 {
+      transition-delay: 0.4s;
+    }
+
+    .fade-up-d5 {
+      transition-delay: 0.5s;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .stats-row {
+        flex-direction: column;
+      }
+
+      .stat {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .stat:last-child {
+        border-bottom: none;
+      }
+
+      .steps {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── INLINE CALLOUT ── */
+    .callout-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      padding: 20px;
+      margin-top: 40px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0, 229, 176, 0.15);
+      border-radius: 14px;
+    }
+
+    .callout-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .callout-icon {
+      font-size: 16px;
+    }
+
+    .callout-divider {
+      color: var(--border-light);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── NAV ── -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="logo">
+        <div class="logo-mark">L</div>
+        <span class="logo-name">LeadFlow</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav-cta">
+        <a href="/auth" class="btn-ghost">Sign in</a>
+        <a href="/auth?mode=signup" class="btn-primary">Start free →</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg-grid"></div>
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+
+
+      <h1>
+        Answer 3 questions.<br />
+        Get <span class="h1-accent">paying clients.</span>
+      </h1>
+
+      <p class="hero-sub">
+        LeadFlow finds local businesses that need your help, <strong>writes them a personalized email</strong>, and
+        sends it — completely automatically. You just show up for the calls.
+      </p>
+
+      <div class="hero-actions">
+        <a href="/auth?mode=signup" class="btn-primary-lg">
+          Get started free →
+        </a>
+        <a href="#how-it-works" class="btn-secondary-lg">
+          See how it works ↓
+        </a>
+      </div>
+
+      <div class="hero-proof">
+        <div class="proof-faces">
+          <div class="proof-face pf1">M</div>
+          <div class="proof-face pf2">S</div>
+          <div class="proof-face pf3">J</div>
+          <div class="proof-face pf4">A</div>
+          <div class="proof-face pf5">R</div>
+        </div>
+        <div class="proof-text">
+          <span class="stars">★★★★★</span>
+          &nbsp;Loved by <strong>1,200+ freelancers</strong> and agencies
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── NICHE STRIP ── -->
+  <div class="niche-strip">
+    <div class="niche-strip-inner">
+      <span class="niche-label">Works for</span>
+      <span class="niche-divider">|</span>
+      <div class="niche-tags">
+        <span class="niche-tag">🏘️ Real Estate</span>
+        <span class="niche-tag">🔧 HVAC & Plumbing</span>
+        <span class="niche-tag">🦷 Dental & Medical</span>
+        <span class="niche-tag">🍽️ Restaurants</span>
+        <span class="niche-tag">⚡ Electricians</span>
+        <span class="niche-tag">🚗 Auto Services</span>
+        <span class="niche-more">+ any local business →</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── HOW IT WORKS ── -->
+  <section class="hiw" id="how-it-works">
+    <div class="section-inner">
+      <div class="hiw-header fade-up">
+        <div class="section-label">How it works</div>
+        <h2>Three questions. Then<br />it runs itself.</h2>
+        <p class="section-sub">No spreadsheets. No copywriting. No follow-up reminders. Just set your target and let
+          LeadFlow work through the night.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step fade-up fade-up-d1">
+          <div class="step-num">Step 01</div>
+          <div class="step-icon">🎯</div>
+          <h3>Tell us who you want</h3>
+          <p>Type the kind of business, pick a city, and describe what you offer. That's it. The whole setup takes under
+            60 seconds.</p>
+        </div>
+        <div class="step fade-up fade-up-d2">
+          <div class="step-num">Step 02</div>
+          <div class="step-icon">🗺️</div>
+          <h3>We find the leads</h3>
+          <p>LeadFlow scans Google Maps and pulls hundreds of matching businesses — name, phone, website, ratings — all
+            in minutes.</p>
+        </div>
+        <div class="step fade-up fade-up-d3">
+          <div class="step-num">Step 03</div>
+          <div class="step-icon">🧠</div>
+          <h3>AI qualifies the best ones</h3>
+          <p>Every website is analyzed for weak spots — slow load times, missing contact forms, poor SEO. Only hot
+            prospects get flagged.</p>
+        </div>
+        <div class="step fade-up fade-up-d4">
+          <div class="step-num">Step 04</div>
+          <div class="step-icon">✉️</div>
+          <h3>Real emails get discovered</h3>
+          <p>LeadFlow visits each site and extracts actual contact addresses — no guessing games, no bloated
+            bounce-prone lists.</p>
+        </div>
+        <div class="step fade-up fade-up-d5">
+          <div class="step-num">Step 05</div>
+          <div class="step-icon">🚀</div>
+          <h3>Personalized emails go out</h3>
+          <p>Each email references the business by name, mentions their specific problem, and pitches your offer. Sent
+            from your Gmail on your schedule.</p>
+        </div>
+      </div>
+
+      <div class="callout-bar fade-up">
+        <div class="callout-item">
+          <span class="callout-icon">⏱️</span>
+          Setup takes 60 seconds
+        </div>
+        <span class="callout-divider">·</span>
+        <div class="callout-item">
+          <span class="callout-icon">🔁</span>
+          Runs every day automatically
+        </div>
+        <span class="callout-divider">·</span>
+        <div class="callout-item">
+          <span class="callout-icon">💤</span>
+          Wake up to replies in your inbox
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section id="features">
+    <div class="section-inner">
+      <div class="fade-up">
+        <div class="section-label">Features</div>
+        <h2>Everything needed.<br />Nothing that's not.</h2>
+        <p class="section-sub">Built for freelancers and small agencies who want results without complexity.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feat-card fade-up fade-up-d1">
+          <div class="feat-icon">🗺️</div>
+          <h3>Google Maps Scraper</h3>
+          <p>Searches any niche in any city. Pulls names, phones, websites, and ratings for every result — hundreds of
+            leads in minutes, not hours.</p>
+        </div>
+        <div class="feat-card fade-up fade-up-d2">
+          <div class="feat-icon">⚡</div>
+          <h3>Website Scoring</h3>
+          <p>Every business site gets a score based on speed, SEO health, and lead capture quality. You only spend time
+            on people who actually need your service.</p>
+        </div>
+        <div class="feat-card fade-up fade-up-d3">
+          <div class="feat-icon">📬</div>
+          <h3>Email Discovery</h3>
+          <p>Finds real contact addresses from websites, footers, and social profiles — not guessed patterns. Higher
+            deliverability, fewer bounces.</p>
+        </div>
+        <div class="feat-card fade-up fade-up-d1">
+          <div class="feat-icon">🤖</div>
+          <h3>AI Email Writer</h3>
+          <p>Every email is unique. The AI names the business, calls out a specific weakness, and presents your pitch as
+            the obvious solution. No templates, no mass-blast feeling.</p>
+        </div>
+        <div class="feat-card fade-up fade-up-d2">
+          <div class="feat-icon">📊</div>
+          <h3>Google Sheets Sync</h3>
+          <p>Every lead, score, email, and reply status syncs to your Google Sheet in real time. Share with your team,
+            filter your pipeline, export any time.</p>
+        </div>
+        <div class="feat-card fade-up fade-up-d3">
+          <div class="feat-icon">🛡️</div>
+          <h3>Safe Send Engine</h3>
+          <p>Respects Gmail's daily limits, adds natural delays between sends, and tracks who's already been contacted.
+            Your account stays healthy.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── SOCIAL PROOF ── -->
+  <section class="proof-section">
+    <div class="section-inner">
+      <div class="fade-up" style="text-align:center">
+        <div class="section-label">What users say</div>
+        <h2>Real people. Real results.</h2>
+      </div>
+
+      <div class="testimonials">
+        <div class="tcard fade-up fade-up-d1">
+          <div class="tcard-stars">★★★★★</div>
+          <p class="tcard-quote">"I booked 3 new clients in my first week. The emails sound genuinely human — clients
+            have actually commented on how personal they feel. Nothing like the AI spam I expected."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#1e2060;color:#a5b4fc;">M</div>
+            <div>
+              <div class="author-name">Marcus T.</div>
+              <div class="author-role">Web Design Agency · Miami</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tcard fade-up fade-up-d2">
+          <div class="tcard-stars">★★★★★</div>
+          <p class="tcard-quote">"Targeting HVAC companies in Texas. Got 400 qualified leads in two days and 8 replies
+            in the first batch. At this price, nothing else even comes close."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#052e16;color:#4ade80;">S</div>
+            <div>
+              <div class="author-name">Sarah K.</div>
+              <div class="author-role">Marketing Consultant · Dallas</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tcard fade-up fade-up-d3">
+          <div class="tcard-stars">★★★★★</div>
+          <p class="tcard-quote">"I used to spend 4 hours a day doing manual outreach. Now I run LeadFlow overnight and
+            wake up to a full pipeline. It's genuinely changed how I run my business."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#2d1515;color:#f87171;">J</div>
+            <div>
+              <div class="author-name">James R.</div>
+              <div class="author-role">SEO Agency Owner · London</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-row fade-up">
+        <div class="stat">
+          <div class="stat-number">50K+</div>
+          <div class="stat-label">Leads generated</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">12K+</div>
+          <div class="stat-label">Emails sent</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">1,200+</div>
+          <div class="stat-label">Active users</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">30+</div>
+          <div class="stat-label">Countries</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section id="pricing">
+    <div class="section-inner">
+      <div class="fade-up" style="text-align:center">
+        <div class="section-label">Pricing</div>
+        <h2>Start free. Scale when<br />it's working.</h2>
+        <p class="section-sub" style="margin:0 auto;">No credit card required. No hidden fees. Upgrade, downgrade, or
+          cancel any time.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Free -->
+        <div class="price-card fade-up fade-up-d1">
+          <div class="price-tier">Free</div>
+          <div class="price-amount">
+            <span class="price-num">$0</span>
+            <span class="price-per">/mo</span>
+          </div>
+          <p class="price-tagline">Test the waters with no risk.</p>
+          <div class="price-divider"></div>
+          <ul class="price-features">
+            <li><span class="price-check">✓</span> 200 leads per month</li>
+            <li><span class="price-check">✓</span> 50 emails per month</li>
+            <li><span class="price-check">✓</span> 1 target niche</li>
+            <li><span class="price-check">✓</span> Google Sheets export</li>
+            <li><span class="price-cross">✗</span> <span class="crossed">AI email writing</span></li>
+            <li><span class="price-cross">✗</span> <span class="crossed">Priority support</span></li>
+          </ul>
+          <a href="/auth?mode=signup" class="btn-price btn-price-ghost">Get started free</a>
+        </div>
+
+        <!-- Pro -->
+        <div class="price-card featured fade-up fade-up-d2">
+          <div class="featured-badge">MOST POPULAR</div>
+          <div class="price-tier">Pro</div>
+          <div class="price-amount">
+            <span class="price-num" style="color:var(--accent)">$49</span>
+            <span class="price-per">/mo</span>
+          </div>
+          <p class="price-tagline" style="color:var(--text-muted)">Everything you need to fill your pipeline.</p>
+          <div class="price-divider"></div>
+          <ul class="price-features">
+            <li><span class="price-check">✓</span> 2,000 leads per month</li>
+            <li><span class="price-check">✓</span> 500 emails per month</li>
+            <li><span class="price-check">✓</span> Unlimited niches</li>
+            <li><span class="price-check">✓</span> AI email writing</li>
+            <li><span class="price-check">✓</span> Google Sheets export</li>
+            <li><span class="price-check">✓</span> Priority support</li>
+          </ul>
+          <a href="/auth?mode=signup" class="btn-price btn-price-accent">Start Pro →</a>
+        </div>
+
+        <!-- Scale -->
+        <div class="price-card fade-up fade-up-d3">
+          <div class="price-tier">Scale</div>
+          <div class="price-amount">
+            <span class="price-num">$149</span>
+            <span class="price-per">/mo</span>
+          </div>
+          <p class="price-tagline">For agencies running multiple campaigns.</p>
+          <div class="price-divider"></div>
+          <ul class="price-features">
+            <li><span class="price-check">✓</span> Unlimited leads</li>
+            <li><span class="price-check">✓</span> Unlimited emails</li>
+            <li><span class="price-check">✓</span> Unlimited niches</li>
+            <li><span class="price-check">✓</span> AI email writing</li>
+            <li><span class="price-check">✓</span> White-label option</li>
+            <li><span class="price-check">✓</span> Dedicated support</li>
+          </ul>
+          <a href="/auth?mode=signup" class="btn-price btn-price-ghost">Get Scale</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FAQ ── -->
+  <section id="faq" style="background:var(--surface)">
+    <div class="section-inner">
+      <div class="fade-up" style="text-align:center">
+        <div class="section-label">FAQ</div>
+        <h2>Still have questions?</h2>
+      </div>
+
+      <div class="faq-list" id="faq-list">
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Do I need to be technical to use this?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>Not at all. If you can fill out a form, you can use LeadFlow. Connect your Gmail, link your Google
+              Sheets, set your target — it takes under 5 minutes. After that, everything runs on its own.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            What cities and niches does it work for?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>Any city and any niche listed on Google Maps — which is essentially everywhere in the world. Users run
+              LeadFlow for restaurants in Tokyo, dentists in Dubai, plumbers in Toronto. If Google Maps has listings,
+              LeadFlow can find them.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            How personalized are the emails, really?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>Very. Every email names the business, references their city, calls out specific issues found on their
+              website (like slow load time or no contact form), and frames your pitch around their actual pain point. No
+              two emails are identical — and recipients can tell.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Will my Gmail account get flagged as spam?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>LeadFlow is built with deliverability in mind. It adds natural delays between sends, respects Gmail's
+              daily limits, and only contacts real businesses with a verified web presence. We recommend starting at
+              20–50 emails per day to build a healthy sending reputation.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            What accounts do I need to connect?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>Three things: a Gmail account (free) for sending, a Google Sheets service account (free) for storing
+              leads, and an OpenRouter API key (free tier available) for AI email generation. Full setup instructions
+              are provided right after you sign up.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            How long until I see results?
+            <span class="faq-icon">+</span>
+          </button>
+          <div class="faq-body">
+            <p>Most users see their first replies within 48–72 hours of their first send batch. Results depend on your
+              niche, offer strength, and sending volume — but the system starts working from day one.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section">
+    <div class="section-inner">
+      <div class="cta-box fade-up">
+        <div class="cta-glow"></div>
+        <div class="section-label" style="text-align:center">Get started</div>
+        <h2>Your next client is already<br />on Google Maps.</h2>
+        <p class="cta-sub">Start for free. No credit card. No setup fees. Your first 200 leads are on us — and you keep
+          every client you close.</p>
+        <a href="/auth?mode=signup" class="btn-primary-lg" style="display:inline-flex">
+          Find my first leads free →
+        </a>
+        <p class="cta-note">Free forever plan available · <span>Takes 60 seconds to set up</span> · Cancel any time</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-left">
+        <a href="/" class="logo">
+          <div class="logo-mark">L</div>
+          <span class="logo-name">LeadFlow</span>
+        </a>
+        <span class="footer-copy">© 2025 LeadFlow. All rights reserved.</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#faq">FAQ</a></li>
+        <li><a href="/auth">Sign in</a></li>
+      </ul>
+    </div>
+  </footer>
+
+  <script>
+    // FAQ toggle
+    function toggleFaq(btn) {
+      const item = btn.parentElement;
+      const body = btn.nextElementSibling;
+      const icon = btn.querySelector('.faq-icon');
+      const isOpen = item.classList.contains('open');
+
+      document.querySelectorAll('.faq-item.open').forEach(el => {
+        el.classList.remove('open');
+        el.querySelector('.faq-body').classList.remove('open');
+        el.querySelector('.faq-icon').textContent = '+';
+      });
+
+      if (!isOpen) {
+        item.classList.add('open');
+        body.classList.add('open');
+        icon.textContent = '−';
+      }
+    }
+
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Fade-up on scroll
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+    // Redirect if already logged in
+    fetch('/api/auth/me').then(r => {
+      if (r.ok) window.location.href = '/dashboard';
+    }).catch(() => { });
+  </script>
+</body>
+
+</html>

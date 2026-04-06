@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(venv/Scripts/pip install:*)",
+      "Bash(venv/Scripts/python -c \"import fastapi, uvicorn; print\\(''fastapi'', fastapi.__version__\\); print\\(''uvicorn'', uvicorn.__version__\\)\")",
+      "Bash(venv/Scripts/pip.exe install:*)",
+      "Bash(python -m pip install fastapi \"uvicorn[standard]\" python-multipart)",
+      "Bash(venv/Scripts/python.exe -c \"import fastapi; print\\(''OK'', fastapi.__version__\\)\")",
+      "Bash(echo \"exit:$?\")",
+      "Bash(\"venv/Scripts/python\" -m pip install fastapi)",
+      "Bash(\"venv/Scripts/python\" -m pip install \"uvicorn[standard]\" python-multipart)",
+      "Bash(\"venv/Scripts/python\" -c \"from fastapi import FastAPI; from pydantic import BaseModel; import uvicorn; print\\(''All web deps OK''\\)\")",
+      "Bash(\"venv/Scripts/python\" -m py_compile api.py)",
+      "Bash(\"venv/Scripts/python\" -m py_compile api.py database.py)",
+      "Bash(\"venv/Scripts/python\" -c \"from database import init_db; init_db\\(\\); print\\(''DB init OK''\\)\")",
+      "Bash(\"venv/Scripts/python\" -m py_compile email_sender.py sheets_database.py)",
+      "Bash(\"venv/Scripts/python\" -m py_compile api.py email_sender.py main.py)",
+      "Bash(\"venv/Scripts/python\" -m py_compile email_sender.py api.py config.py)",
+      "Bash(python -m py_compile email_sender.py api.py config.py sheets_database.py email_finder.py email_generator.py)",
+      "Bash(python -m py_compile email_sender.py config.py)",
+      "Bash(python -m py_compile email_sender.py api.py config.py)",
+      "Bash(python -m py_compile api.py email_sender.py config.py)",
+      "Bash(python -m py_compile database.py api.py)",
+      "Bash(python -m py_compile api.py database.py)",
+      "Bash(python -m py_compile api.py email_generator.py config.py)",
+      "Bash(psql \"postgresql://postgres:mubeen123@localhost:5001/cold_email\" -c \"TRUNCATE businesses, generated_emails, sent_emails, activity_logs RESTART IDENTITY CASCADE;\")",
+      "Bash(DATABASE_URL=\"postgresql://postgres:mubeen123@localhost:5001/cold_email\" venv/Scripts/python.exe -c \":*)",
+      "Bash(venv/Scripts/python.exe -c \"from playwright.sync_api import sync_playwright; p = sync_playwright\\(\\).start\\(\\); b = p.chromium.launch\\(headless=True\\); b.close\\(\\); p.stop\\(\\); print\\(''Playwright OK''\\)\")",
+      "Bash(venv/Scripts/python.exe -c \":*)",
+      "Bash(python -c \"import ast; ast.parse\\(open\\(''pg_database.py''\\).read\\(\\)\\); print\\(''Syntax OK''\\)\")",
+      "Bash(tasklist:*)",
+      "Bash(timeout 15 venv/Scripts/python.exe -c \":*)",
+      "Bash(timeout 10 venv/Scripts/python.exe -c \":*)",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(taskkill //F //IM python.exe)"
+    ]
+  }
+}
