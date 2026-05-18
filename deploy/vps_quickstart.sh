@@ -61,7 +61,11 @@ venv/bin/pip install -r requirements.txt -r requirements_api.txt -q
 # ── 4. Playwright Chromium ────────────────────────────────────────────────────
 echo "[4/7] Installing Playwright Chromium (for scraping)..."
 venv/bin/playwright install chromium
-venv/bin/playwright install-deps chromium
+# install-deps uses legacy package names that don't exist on Ubuntu 24.04;
+# all required system libs were already installed in step 1.
+if dpkg --compare-versions "$UBUNTU_VERSION" lt "24.00" 2>/dev/null; then
+    venv/bin/playwright install-deps chromium
+fi
 
 # ── 5. Environment file ───────────────────────────────────────────────────────
 if [ ! -f "$APP_DIR/.env.production" ]; then
