@@ -30,7 +30,7 @@ fi
 
 apt-get install -y -qq \
     $PYTHON_PKG python3-pip \
-    nginx git curl \
+    nginx git curl rsync \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
     libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
     libgbm1 $ALSA_PKG libpango-1.0-0 libpangocairo-1.0-0 \
