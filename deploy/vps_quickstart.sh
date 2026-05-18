@@ -13,13 +13,32 @@ SERVICE="cold-email-automation"
 # ── 1. System packages ────────────────────────────────────────────────────────
 echo "[1/7] Installing system packages..."
 apt-get update -qq
+
+# Detect Ubuntu version to pick correct package names
+UBUNTU_VERSION=$(lsb_release -rs 2>/dev/null || echo "22.04")
+echo "    Detected Ubuntu $UBUNTU_VERSION"
+
+if dpkg --compare-versions "$UBUNTU_VERSION" ge "24.00" 2>/dev/null || [ "$(echo "$UBUNTU_VERSION >= 24.00" | awk '{print ($1 >= $3)}')" = "1" ]; then
+    # Ubuntu 24.04+: python3.12, libasound2t64
+    PYTHON_PKG="python3.12 python3.12-venv"
+    ALSA_PKG="libasound2t64"
+else
+    # Ubuntu 22.04 and earlier
+    PYTHON_PKG="python3.11 python3.11-venv"
+    ALSA_PKG="libasound2"
+fi
+
 apt-get install -y -qq \
-    python3.11 python3.11-venv python3-pip \
+    $PYTHON_PKG python3-pip \
     nginx git curl \
     libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
     libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
-    libgbm1 libasound2 libpango-1.0-0 libpangocairo-1.0-0 \
+    libgbm1 $ALSA_PKG libpango-1.0-0 libpangocairo-1.0-0 \
     libatspi2.0-0 fonts-liberation
+
+# Resolve python3 binary
+PYTHON_BIN=$(command -v python3.12 || command -v python3.11 || command -v python3)
+echo "    Using Python: $PYTHON_BIN ($($PYTHON_BIN --version))"
 
 # ── 2. Copy project files ─────────────────────────────────────────────────────
 echo "[2/7] Copying project files to $APP_DIR..."
@@ -35,7 +54,7 @@ cd "$APP_DIR"
 
 # ── 3. Python virtual environment ─────────────────────────────────────────────
 echo "[3/7] Setting up Python virtual environment..."
-python3.11 -m venv venv
+$PYTHON_BIN -m venv venv
 venv/bin/pip install --upgrade pip -q
 venv/bin/pip install -r requirements.txt -r requirements_api.txt -q
 
