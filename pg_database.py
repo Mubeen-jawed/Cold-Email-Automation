@@ -669,8 +669,8 @@ class PostgresDatabase:
         stats = dict(row)
         # open rate
         with self._cursor() as cur:
-            cur.execute("SELECT COUNT(DISTINCT email_id) FROM email_opens")
-            stats["emails_opened"] = cur.fetchone()[0] or 0
+            cur.execute("SELECT COUNT(DISTINCT email_id) AS opened FROM email_opens")
+            stats["emails_opened"] = cur.fetchone()["opened"] or 0
         return stats
 
     def get_spreadsheet_url(self):

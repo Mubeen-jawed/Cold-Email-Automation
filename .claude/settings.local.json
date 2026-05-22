@@ -36,6 +36,8 @@
       "Bash(./venv/Scripts/pip install *)",
       "Bash(echo \"EXIT: $?\")",
       "Bash(./venv/Scripts/python.exe -m pip install psycopg2-binary)"
+      "Bash(grep -cE \"venv/|__pycache__|\\\\.env$|credentials\\\\.json|gmail_token|app\\\\.db\")",
+      "Bash(venv/bin/python -c \"from pg_database import PostgresDatabase; print\\(PostgresDatabase\\(\\).get_inbox_stats\\(\\)\\)\")"
     ]
   }
 }

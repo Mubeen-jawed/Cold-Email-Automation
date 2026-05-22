@@ -2160,7 +2160,7 @@ function campCard(c) {
     </div>` : '';
 
   return `
-    <div class="border rounded-xl overflow-hidden ${activeBorder} transition-colors" data-camp-id="${c.id}">
+    <div class="border rounded-xl ${activeBorder} transition-colors" data-camp-id="${c.id}">
       <div class="p-4 space-y-3">
         <div class="flex items-start justify-between gap-2">
           <div class="flex-1 min-w-0">
@@ -2236,7 +2236,7 @@ function campCard(c) {
       </div>
 
       <!-- Pipeline panel (collapsible) -->
-      <div data-panel class="hidden border-t border-slate-700/60 bg-slate-900/50 p-4 space-y-2">
+      <div data-panel class="hidden border-t border-slate-700/60 bg-slate-900/50 rounded-b-xl p-4 space-y-2">
         ${inactiveWarning}
 
         <!-- Inline pipeline status / error banner -->
